@@ -24,5 +24,10 @@ Portable facts imported:
   - weekly Tokyo English-friendly internships sheet update
   - weekly Tokyo student discussion prompt to Discord
   - weekly Tokyo social events post to Discord
+- n8n was running in Docker on the old Linux machine and was part of the automation stack.
+- The old internship workflow depended on Google Sheets access via `gog`/Google auth.
+- A recurring old failure mode was Discord announce delivery failing when channel targets were ambiguous by name rather than stable IDs.
+- Another recurring old failure mode was browser-control timeouts affecting the internship sheet update flow.
+- Over time, the old environment gained many additional custom skills/CLIs; the more durable ones were Google tooling (`gog`), GitHub CLI guidance, Oracle second-model review, and media/document helper tools.
 
 Do not blindly reuse Linux machine paths, tokens, or host-specific config from that backup on this Mac. Recreate only portable intent and documentation.
