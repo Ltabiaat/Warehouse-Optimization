@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "warehouse-optimization"
+version = "0.1.0"
+description = "Warehouse analysis and optimization system scaffold"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "Guide Robotics" }
+]
+dependencies = []
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
