@@ -70,6 +70,18 @@ Use Google Docs for:
 4. Implement an MVP optimization run pipeline
 5. Produce dashboard-ready KPI outputs
 
+## Development Workflow
+
+A lightweight Makefile is included for common test-first development tasks.
+
+Examples:
+
+```bash
+make test
+make test-verbose
+make clean-pyc
+```
+
 ## Development Status
 
 This repository is currently in the project setup and architecture phase.
