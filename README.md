@@ -33,6 +33,7 @@ The current repository scaffold is organized around the major architecture domai
 ```text
 .
 ├── docs/
+│   ├── erpnext-integration-plan.md
 │   ├── implementation-plan.md
 │   ├── product-requirements.md
 │   ├── project-outline.md
