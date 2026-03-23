@@ -2,10 +2,7 @@
 
 Warehouse Optimization is a warehouse analysis and decision-support system for improving routes, layouts, and throughput over time.
 
-The current project direction is based on three foundation documents:
-- `docs/project-outline.md`
-- `docs/product-requirements.md`
-- `docs/technical-architecture.md`
+The current project direction is maintained in Google Docs, not in this repository. Repo code should implement the current agreed specs, while planning/spec documents live in Google Drive.
 
 ## Vision
 
@@ -33,12 +30,7 @@ The current repository scaffold is organized around the major architecture domai
 ```text
 .
 ├── docs/
-│   ├── erpnext-integration-plan.md
-│   ├── implementation-plan.md
-│   ├── product-requirements.md
-│   ├── project-outline.md
-│   ├── tech-stack.md
-│   └── technical-architecture.md
+│   └── (reserved for implementation-adjacent technical notes only)
 ├── src/
 │   └── warehouse_optimization/
 │       ├── analytics/
@@ -52,6 +44,23 @@ The current repository scaffold is organized around the major architecture domai
 ├── tests/
 └── pyproject.toml
 ```
+
+## Specification Source of Truth
+
+Specification and planning documents should live in Google Docs / Google Drive, not in the repository.
+
+Use the repo for:
+- implementation code
+- tests
+- sample data
+- implementation-adjacent technical notes
+
+Use Google Docs for:
+- product specs
+- PRDs
+- architecture docs
+- research writeups
+- prompt-engineering and planning docs
 
 ## Immediate Next Steps
 
