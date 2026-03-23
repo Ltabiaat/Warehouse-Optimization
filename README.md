@@ -36,6 +36,7 @@ The current repository scaffold is organized around the major architecture domai
 │   ├── implementation-plan.md
 │   ├── product-requirements.md
 │   ├── project-outline.md
+│   ├── tech-stack.md
 │   └── technical-architecture.md
 ├── src/
 │   └── warehouse_optimization/
