@@ -71,8 +71,20 @@ For each meaningful function/component/module, document:
 - Immediate next tasks
 - Nice-to-have follow-ups
 
+## Current Status
+- Project direction is being refined for a warehouse optimization system.
+- Initial WMS choice: ERPNext.
+- Broader platform additions may come later after the first implementation path is validated.
+
+## Decisions
+- Decision: Use ERPNext as the initial WMS for the project.
+- Reason: Start with a single practical system of record now and expand later if needed.
+- Alternatives considered: Odoo, OpenBoxes.
+- Follow-up needed: define ERPNext-first MVP scope, data model, and simulator boundaries.
+
 ## Update Log
 
 ### 2026-03-24
 - Created process documentation source file.
 - Established workflow: maintain documentation here during work, then sync polished updates to Google Docs.
+- Recorded ERPNext as the initial WMS choice for the warehouse project.

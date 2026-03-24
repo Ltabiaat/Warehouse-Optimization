@@ -11,6 +11,7 @@
 - Preference: maintain engineering documentation in workspace files first, then sync polished updates into Google Docs as work progresses
 - Preference: Google Docs progress documentation should track implementation progress and function/component operations so generated code is easy to understand later
 - Default process documentation sync target: https://docs.google.com/document/d/1fTt_3JAG4_u5jb5yyL3o2rqV4ggKh2Bv497zYz1Qw5A/edit?tab=t.0
+- Warehouse project decision: use ERPNext as the initial WMS for this project; broader system additions can come later
 - Preference: focus on test-driven development when building products
 - Name: Lancelot
 - Preferred form of address: Lancelot
