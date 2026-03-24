@@ -121,10 +121,21 @@ For each meaningful function/component/module, document:
 - Missing ideal fields such as full order context, warehouse graph geometry, and exact task durations are not blockers for proof-of-concept testing if handled with explicit approximations.
 - The initial code scaffold is dependency-light on purpose so it can run in the current environment without extra package installation.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Added sample CSV ingestion, normalized CSV output generation, and first KPI summary generation.
+- Why: Needed an end-to-end proof that the MVP pipeline can turn raw warehouse export rows into analysis-ready outputs.
+- Impact: We now have executable sample outputs and a first signal check for dataset usefulness.
+
+## Operational Notes
+- Sample pipeline outputs currently live under `warehouse_mvp/output/`.
+- Current sample KPI signal is promising enough for MVP continuation: the pipeline can identify top items, top locations, operator event counts, movement direction mix, and expiry-related candidates.
+- This is still a proof-of-concept signal, not yet a production warehouse truth model.
+
 ## Next Steps
-- Add CSV file ingestion and batch normalization.
-- Generate a normalized output example from the sample raw export fixture.
-- Define first KPI set and baseline prioritization heuristic.
+- Add CLI argument support and make ingestion configurable.
+- Implement the first transparent prioritization heuristic.
+- Add anomaly/validation reporting for messy source data.
 - Sync a polished summary of this work into the Google Doc.
 
 ## Update Log

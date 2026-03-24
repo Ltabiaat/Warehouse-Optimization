@@ -1,0 +1,157 @@
+{
+  "total_rows": 12,
+  "unique_items": 7,
+  "unique_locations": 8,
+  "unique_operators": 7,
+  "unique_clients": 3,
+  "total_qty_in": "155",
+  "total_qty_out": "72",
+  "net_movement": "83",
+  "perishable_rows": 12,
+  "movement_direction_counts": {
+    "IN": 5,
+    "OUT": 6,
+    "ZERO": 1
+  },
+  "transaction_type_counts": {
+    "入庫": 5,
+    "出庫": 6,
+    "棚卸": 1
+  },
+  "top_items_by_movement": [
+    {
+      "key": "SKU-002",
+      "value": "118"
+    },
+    {
+      "key": "SKU-005",
+      "value": "36"
+    },
+    {
+      "key": "SKU-001",
+      "value": "25"
+    },
+    {
+      "key": "SKU-006",
+      "value": "17"
+    },
+    {
+      "key": "SKU-003",
+      "value": "16"
+    }
+  ],
+  "top_locations_by_movement": [
+    {
+      "key": "F1-B-02",
+      "value": "118"
+    },
+    {
+      "key": "F1-B-05",
+      "value": "36"
+    },
+    {
+      "key": "F1-A-01",
+      "value": "25"
+    },
+    {
+      "key": "F2-A-07",
+      "value": "17"
+    },
+    {
+      "key": "F3-F-02",
+      "value": "15"
+    }
+  ],
+  "operator_event_counts": [
+    {
+      "key": "OP001",
+      "value": 3
+    },
+    {
+      "key": "OP002",
+      "value": 2
+    },
+    {
+      "key": "OP003",
+      "value": 2
+    },
+    {
+      "key": "OP004",
+      "value": 2
+    },
+    {
+      "key": "OP005",
+      "value": 1
+    },
+    {
+      "key": "OP006",
+      "value": 1
+    },
+    {
+      "key": "OP007",
+      "value": 1
+    }
+  ],
+  "expiry_candidates": [
+    {
+      "item_code": "SKU-001",
+      "expiration_date": "2026-09-20",
+      "movement_direction": "IN",
+      "location_no": "F1-A-01"
+    },
+    {
+      "item_code": "SKU-001",
+      "expiration_date": "2026-09-20",
+      "movement_direction": "OUT",
+      "location_no": "F1-A-01"
+    },
+    {
+      "item_code": "SKU-002",
+      "expiration_date": "2026-03-30",
+      "movement_direction": "IN",
+      "location_no": "F1-B-02"
+    },
+    {
+      "item_code": "SKU-002",
+      "expiration_date": "2026-03-30",
+      "movement_direction": "OUT",
+      "location_no": "F1-B-02"
+    },
+    {
+      "item_code": "SKU-003",
+      "expiration_date": "2027-01-15",
+      "movement_direction": "OUT",
+      "location_no": "F2-C-05"
+    },
+    {
+      "item_code": "SKU-003",
+      "expiration_date": "2027-01-15",
+      "movement_direction": "IN",
+      "location_no": "F1-C-01"
+    },
+    {
+      "item_code": "SKU-004",
+      "expiration_date": "2026-12-01",
+      "movement_direction": "ZERO",
+      "location_no": "F1-D-03"
+    },
+    {
+      "item_code": "SKU-005",
+      "expiration_date": "2026-03-28",
+      "movement_direction": "OUT",
+      "location_no": "F1-B-05"
+    },
+    {
+      "item_code": "SKU-006",
+      "expiration_date": "2026-10-24",
+      "movement_direction": "IN",
+      "location_no": "F2-A-07"
+    },
+    {
+      "item_code": "SKU-006",
+      "expiration_date": "2026-10-24",
+      "movement_direction": "OUT",
+      "location_no": "F2-A-07"
+    }
+  ]
+}
