@@ -254,10 +254,25 @@ For each meaningful function/component/module, document:
 - Task generation currently prefers the first configured start cell when available.
 - Dock markers are stored and validated now, even if the first Gymnasium environment does not yet use them deeply.
 
+## Decisions
+- Decision: Use the Streamlit app as the warehouse/world configuration layer, not as the task-definition layer.
+- Reason: Warehouse structure and operational work generation are separate concerns and should stay cleanly separated.
+- Alternatives considered: encoding tasks directly in layout input.
+- Follow-up needed: implement order/inventory-driven task generation.
+- Decision: Generate forklift tasks from operational sales/order/inventory context and execute them inside the Gymnasium environment built from the layout config.
+- Reason: This reflects real warehouse work more accurately than manually scripted zone sequences.
+- Alternatives considered: hand-authored scenario sequences only.
+- Follow-up needed: build task dataclasses and an order-to-task generator.
+
+## Operational Notes
+- The current intended architecture is now: Streamlit layout -> canonical warehouse config/topology -> order/inventory-driven task generation -> Gymnasium environment execution -> analytics/Power BI reporting.
+- Task generation should eventually use what was ordered, where it is located, and how it must be processed.
+- The current manual zone-sequence task support remains useful as a simple baseline and testing mechanism.
+
 ## Next Steps
+- Implement order/inventory-driven forklift task models and generators.
 - Use dock markers in future task generators, e.g. inbound -> zone -> outbound workflows.
 - Verify the revised Streamlit UX with real usage.
-- Add richer scenario generation on top of starts/docks later.
 - Sync polished updates back into the Google Doc when useful.
 
 ## Update Log

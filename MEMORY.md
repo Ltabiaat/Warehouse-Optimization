@@ -12,6 +12,7 @@
 - Preference: Google Docs progress documentation should track implementation progress and function/component operations so generated code is easy to understand later
 - Default process documentation sync target: https://docs.google.com/document/d/1fTt_3JAG4_u5jb5yyL3o2rqV4ggKh2Bv497zYz1Qw5A/edit?tab=t.0
 - Warehouse project decision: use ERPNext as the initial WMS for this project; broader system additions can come later
+- Warehouse architecture direction: treat Streamlit layout input as the warehouse/world definition, operational sales/order/inventory data as task-generation input, and Gymnasium as the execution/simulation layer that runs those generated forklift tasks inside the configured warehouse topology
 - Preference: focus on test-driven development when building products
 - Name: Lancelot
 - Preferred form of address: Lancelot
