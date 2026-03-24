@@ -131,12 +131,13 @@ For each meaningful function/component/module, document:
 - Sample pipeline outputs currently live under `warehouse_mvp/output/`.
 - Current sample KPI signal is promising enough for MVP continuation: the pipeline can identify top items, top locations, operator event counts, movement direction mix, and expiry-related candidates.
 - This is still a proof-of-concept signal, not yet a production warehouse truth model.
+- The Google Drive project folder has been mirrored locally into `docs/google-knowledge-base/` so prior Google Docs can be used as repo-accessible project knowledge.
 
 ## Next Steps
+- Re-read imported Google Docs and reconcile any useful project decisions into local working docs.
 - Add CLI argument support and make ingestion configurable.
-- Implement the first transparent prioritization heuristic.
-- Add anomaly/validation reporting for messy source data.
-- Sync a polished summary of this work into the Google Doc.
+- Narrow the Power BI MVP to current reporting goals.
+- Sync polished updates back into the Google Doc when useful.
 
 ## Update Log
 
