@@ -75,12 +75,33 @@ For each meaningful function/component/module, document:
 - Project direction is being refined for a warehouse optimization system.
 - Initial WMS choice: ERPNext.
 - Broader platform additions may come later after the first implementation path is validated.
+- A real warehouse movement export has now been translated into an MVP-friendly schema and build plan.
 
 ## Decisions
 - Decision: Use ERPNext as the initial WMS for the project.
 - Reason: Start with a single practical system of record now and expand later if needed.
 - Alternatives considered: Odoo, OpenBoxes.
 - Follow-up needed: define ERPNext-first MVP scope, data model, and simulator boundaries.
+- Decision: Use the provided warehouse export as the first movement-event dataset for proof-of-concept testing.
+- Reason: It is enough to test analytics, heuristics, and a lightweight simulation direction without waiting for perfect ERPNext integration.
+- Alternatives considered: waiting for a more complete ERP/warehouse dataset first.
+- Follow-up needed: build parser/cleaner, normalized fact table, and baseline KPI logic.
+
+## Recent Changes
+- Date: 2026-03-24
+- Change: Created warehouse event data dictionary, MVP schema, ERPNext mapping notes, and an MVP build plan.
+- Why: Needed a concrete way to test the idea using real warehouse columns rather than staying at the architecture-discussion level.
+- Impact: The project now has a practical data model and a clear workaround strategy for missing ideal fields.
+
+## Operational Notes
+- Current MVP framing is intentionally narrow: movement analytics, baseline heuristics, and lightweight simulation assumptions.
+- Missing ideal fields such as full order context, warehouse graph geometry, and exact task durations are not blockers for proof-of-concept testing if handled with explicit approximations.
+
+## Next Steps
+- Build raw-to-normalized mapping logic for the warehouse export.
+- Create a sample ingestion/cleaning pipeline.
+- Define first KPI set and baseline prioritization heuristic.
+- Sync a polished summary of this work into the Google Doc.
 
 ## Update Log
 
@@ -88,3 +109,5 @@ For each meaningful function/component/module, document:
 - Created process documentation source file.
 - Established workflow: maintain documentation here during work, then sync polished updates to Google Docs.
 - Recorded ERPNext as the initial WMS choice for the warehouse project.
+- Added a translated warehouse movement data dictionary and MVP event schema.
+- Added ERPNext mapping notes and a workaround-oriented MVP build plan for incomplete source data.
