@@ -269,9 +269,30 @@ For each meaningful function/component/module, document:
 - Task generation should eventually use what was ordered, where it is located, and how it must be processed.
 - The current manual zone-sequence task support remains useful as a simple baseline and testing mechanism.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Added the first order-driven task generation layer for outbound workflows.
+- Why: The architecture requires operational demand data to generate forklift work rather than relying only on hand-authored zone sequences.
+- Impact: The project now has a concrete bridge from normalized operational rows to forklift task sequences.
+
+## Functions and Components
+- Name: `order_task_generator.generate_outbound_tasks`
+- Location: `warehouse_mvp/src/warehouse_mvp/order_task_generator.py`
+- Responsibility: Converts normalized outbound rows into outbound forklift tasks with pickup, optional processing, and dropoff context.
+- Inputs: normalized rows, location-to-zone mapping, processing rules, default dropoff zone.
+- Outputs: sorted `OrderLineTask` objects.
+- Side effects: none.
+- Important edge cases: skips non-outbound rows; falls back to location or floor context when detailed zoning is incomplete.
+- Notes for future changes: extend to inbound, transfers, and richer priority logic.
+
+## Operational Notes
+- The first task-generation layer is intentionally simple and outbound-focused.
+- Current generated sequences are suitable for turning order/work demand into environment-ready route objectives.
+- Manual zone-sequence tasks still remain useful for smoke tests and baseline debugging.
+
 ## Next Steps
-- Implement order/inventory-driven forklift task models and generators.
-- Use dock markers in future task generators, e.g. inbound -> zone -> outbound workflows.
+- Connect generated task sequences to the Gymnasium environment runner.
+- Add inbound putaway and internal transfer task generators.
 - Verify the revised Streamlit UX with real usage.
 - Sync polished updates back into the Google Doc when useful.
 
