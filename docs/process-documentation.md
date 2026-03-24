@@ -171,14 +171,21 @@ For each meaningful function/component/module, document:
 - Important edge cases: very large grids will become cumbersome in checkbox form; resizing trims blocked cells outside the new bounds.
 - Notes for future changes: replace checkbox grid with a more ergonomic drawing interaction if the app grows.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Extended the Streamlit layout configurator to support named zones on the grid.
+- Why: Users need to mark reachable operational areas such as zone A and zone C, not only blocked cells.
+- Impact: The layout config can now represent both movement constraints and destination/operating zones.
+
 ## Operational Notes
 - The Streamlit app currently uses a simple grid-based model, which is enough for first-pass graph/simulation work.
 - Blocked cells represent walls, racks, structural obstacles, and any area forklifts should not traverse.
+- Zone cells represent named target/operating areas that forklifts may need to reach.
 
 ## Next Steps
-- Run the Streamlit app locally and verify the UX.
+- Relaunch the Streamlit app and verify the zone editing UX.
 - Connect saved layout JSON to later graph/simulation conversion logic.
-- Finalize any field-name adjustments needed for Power BI import convenience.
+- Add forklift start positions and dock markers later if needed.
 - Sync polished updates back into the Google Doc when useful.
 
 ## Update Log

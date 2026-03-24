@@ -8,6 +8,7 @@ Provide a simple user-facing app where a user can:
 - specify warehouse layout size
 - specify number of forklifts
 - mark walls or blocked/unreachable areas
+- define named zones such as A, B, C that forklifts may need to reach
 
 This app is intended to become the first warehouse-configuration input surface before simulation or Gymnasium work.
 
@@ -23,10 +24,11 @@ This app is intended to become the first warehouse-configuration input surface b
 - render a 2D grid
 - allow users to mark cells as blocked
 - blocked cells represent walls, shelving, pillars, restricted zones, or otherwise unreachable areas
+- allow users to assign cells to named zones such as A/B/C
 
 ### 3. Exportable configuration
 - save the current configuration to JSON
-- JSON should include warehouse dimensions, forklift count, and blocked cell coordinates
+- JSON should include warehouse dimensions, forklift count, blocked cell coordinates, and zone cell assignments
 
 ## Representation model
 
@@ -47,6 +49,14 @@ Blocked cells should represent any area forklifts must not traverse, including:
 - structural obstacles
 - unreachable/loading-only areas
 
+### Zones
+Zones should represent meaningful destinations or operating areas, including:
+- pick zones
+- storage zones
+- inbound/outbound zones
+- temperature-controlled areas
+- any area forklifts may need to reach as part of a task
+
 ## Output format
 
 Suggested JSON structure:
@@ -60,15 +70,18 @@ Suggested JSON structure:
   "blocked_cells": [
     {"x": 2, "y": 1},
     {"x": 2, "y": 2}
+  ],
+  "zone_cells": [
+    {"x": 5, "y": 1, "zone": "A"},
+    {"x": 8, "y": 6, "zone": "C"}
   ]
 }
 ```
 
 ## Future enhancements
-- draggable drawing tools instead of checkboxes
-- named zones
-- inbound/outbound dock positions
-- pick zones
+- draggable drawing tools instead of single-cell clicks
+- named zone editing beyond A-F
+- inbound/outbound dock templates
 - storage rack templates
 - one-way aisles
 - forklift start positions
