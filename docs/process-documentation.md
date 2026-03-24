@@ -155,10 +155,30 @@ For each meaningful function/component/module, document:
 - `forklift_usage_summary.csv` is the current Power BI-ready forklift usage source.
 - Current dashboard semantics are intentionally careful: outbound quantity is not revenue, and tracker activity is a usage proxy rather than exact utilization truth.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Added a Streamlit-based warehouse layout configurator scaffold with grid size, forklift count, and blocked-cell editing.
+- Why: The project needs a user-facing way to specify warehouse layout and movement constraints before simulation work.
+- Impact: There is now an MVP input surface for warehouse dimensions, forklift count, and unreachable areas.
+
+## Functions and Components
+- Name: `streamlit_app.py`
+- Location: `warehouse_mvp/streamlit_app.py`
+- Responsibility: Provides a simple UI for editing warehouse size, forklift count, and blocked cells, then exporting the configuration as JSON.
+- Inputs: warehouse name, width, height, forklift count, blocked cell selections.
+- Outputs: `output/warehouse_layout_config.json`.
+- Side effects: writes layout configuration JSON when saved.
+- Important edge cases: very large grids will become cumbersome in checkbox form; resizing trims blocked cells outside the new bounds.
+- Notes for future changes: replace checkbox grid with a more ergonomic drawing interaction if the app grows.
+
+## Operational Notes
+- The Streamlit app currently uses a simple grid-based model, which is enough for first-pass graph/simulation work.
+- Blocked cells represent walls, racks, structural obstacles, and any area forklifts should not traverse.
+
 ## Next Steps
-- Generate the sales summary sample output.
+- Run the Streamlit app locally and verify the UX.
+- Connect saved layout JSON to later graph/simulation conversion logic.
 - Finalize any field-name adjustments needed for Power BI import convenience.
-- Re-read imported Google Docs and reconcile any useful project decisions into local working docs.
 - Sync polished updates back into the Google Doc when useful.
 
 ## Update Log
