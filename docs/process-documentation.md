@@ -92,14 +92,38 @@ For each meaningful function/component/module, document:
 - Change: Created warehouse event data dictionary, MVP schema, ERPNext mapping notes, and an MVP build plan.
 - Why: Needed a concrete way to test the idea using real warehouse columns rather than staying at the architecture-discussion level.
 - Impact: The project now has a practical data model and a clear workaround strategy for missing ideal fields.
+- Date: 2026-03-24
+- Change: Scaffolded the first Python normalization package for the warehouse MVP, including schema mapping, row normalization, and unit tests.
+- Why: Needed a concrete ingestion path from raw Japanese warehouse export rows to a normalized event model.
+- Impact: The project now has an executable foundation for sample-file ingestion and downstream KPI work.
+
+## Functions and Components
+- Name: `warehouse_mvp.schema.SOURCE_TO_NORMALIZED`
+- Location: `warehouse_mvp/src/warehouse_mvp/schema.py`
+- Responsibility: Maps source Japanese warehouse export headers into normalized English field names.
+- Inputs: raw column names from the source export.
+- Outputs: normalized field names.
+- Side effects: none.
+- Important edge cases: unmapped columns currently pass through unchanged.
+- Notes for future changes: extend carefully when real source variants appear.
+
+- Name: `warehouse_mvp.normalizer.normalize_row`
+- Location: `warehouse_mvp/src/warehouse_mvp/normalizer.py`
+- Responsibility: Cleans a raw row, parses dates/times/quantities, derives event fields, and returns a normalized event record.
+- Inputs: raw dictionary keyed by source column names.
+- Outputs: normalized row with derived fields such as `event_ts`, `movement_qty`, `movement_direction`, and `event_id`.
+- Side effects: none.
+- Important edge cases: blank numeric fields default to zero; multiple date/time formats are supported; unsupported formats raise explicit errors.
+- Notes for future changes: add batch normalization, structured validation errors, and CSV ingestion wrappers.
 
 ## Operational Notes
 - Current MVP framing is intentionally narrow: movement analytics, baseline heuristics, and lightweight simulation assumptions.
 - Missing ideal fields such as full order context, warehouse graph geometry, and exact task durations are not blockers for proof-of-concept testing if handled with explicit approximations.
+- The initial code scaffold is dependency-light on purpose so it can run in the current environment without extra package installation.
 
 ## Next Steps
-- Build raw-to-normalized mapping logic for the warehouse export.
-- Create a sample ingestion/cleaning pipeline.
+- Add CSV file ingestion and batch normalization.
+- Create a sample raw export fixture and generate a normalized output example.
 - Define first KPI set and baseline prioritization heuristic.
 - Sync a polished summary of this work into the Google Doc.
 

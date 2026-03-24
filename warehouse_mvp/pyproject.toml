@@ -1,0 +1,10 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "warehouse-mvp"
+version = "0.1.0"
+description = "Warehouse movement export normalization pipeline"
+requires-python = ">=3.11"
+dependencies = []
