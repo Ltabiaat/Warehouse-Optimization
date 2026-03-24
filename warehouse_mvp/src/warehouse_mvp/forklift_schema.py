@@ -1,0 +1,43 @@
+from __future__ import annotations
+
+TRAJECTORY_FIELDS = [
+    "device_id",
+    "timestamp",
+    "x",
+    "y",
+    "z",
+    "q_x",
+    "q_y",
+    "q_z",
+    "q_w",
+    "std_x",
+    "std_y",
+    "std_z",
+    "std_R",
+    "std_P",
+    "std_Y",
+]
+
+STATE_FIELDS = [
+    "device_id",
+    "timestamp",
+    "ready",
+    "load_beacon_timestamp",
+    "load_beacon_minor_id",
+    "load_beacon_tx_power",
+    "driver_beacon_timestamp_1",
+    "driver_beacon_minor_id_1",
+    "driver_beacon_rssi_1",
+    "driver_beacon_timestamp_2",
+    "driver_beacon_minor_id_2",
+    "driver_beacon_rssi_2",
+    "driver_beacon_timestamp_3",
+    "driver_beacon_minor_id_3",
+    "driver_beacon_rssi_3",
+    "driver_beacon_timestamp_4",
+    "driver_beacon_minor_id_4",
+    "driver_beacon_rssi_4",
+    "driver_beacon_timestamp_5",
+    "driver_beacon_minor_id_5",
+    "driver_beacon_rssi_5",
+]

@@ -1,0 +1,5 @@
+device_id,timestamp,ready,load_beacon_timestamp,load_beacon_minor_id,load_beacon_tx_power,driver_beacon_timestamp_1,driver_beacon_minor_id_1,driver_beacon_rssi_1,driver_beacon_timestamp_2,driver_beacon_minor_id_2,driver_beacon_rssi_2,driver_beacon_timestamp_3,driver_beacon_minor_id_3,driver_beacon_rssi_3,driver_beacon_timestamp_4,driver_beacon_minor_id_4,driver_beacon_rssi_4,driver_beacon_timestamp_5,driver_beacon_minor_id_5,driver_beacon_rssi_5
+gr-fl-v3-0033,2024-09-09 09:04:51.171000,false,,,,,,,,,,,,,,,,,
+gr-fl-v3-0033,2024-09-09 09:05:58.310000,true,2024-09-09 09:05:58.200000,1201,-59,2024-09-09 09:05:58.100000,501,-71,,,,,,,,,,,,
+gr-fl-v3-0033,2024-09-09 09:05:59.310000,true,2024-09-09 09:05:59.200000,1201,-58,2024-09-09 09:05:59.100000,501,-70,,,,,,,,,,,,
+gr-fl-v3-0033,2024-09-09 09:06:00.310000,true,,,,2024-09-09 09:06:00.100000,501,-69,,,,,,,,,,,,

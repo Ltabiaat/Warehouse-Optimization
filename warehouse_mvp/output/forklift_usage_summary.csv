@@ -1,0 +1,2 @@
+device_id,total_points,valid_points,total_distance_m,first_seen_ts,last_seen_ts,valid_point_ratio,ready_points,load_detect_count,driver_detect_count
+gr-fl-v3-0033,4,4,3.18,2024-09-09 09:05:58.310000,2024-09-09 09:06:01.310000,1.0,3,2,3

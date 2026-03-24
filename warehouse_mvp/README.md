@@ -21,15 +21,20 @@ A small, test-first data pipeline for normalizing real warehouse movement export
 ## Current outputs
 - `output/sample_warehouse_normalized.csv` - normalized version of the sample export
 - `output/sample_kpi_summary.json` - first KPI summary generated from the sample export
+- `output/gr-fl-v3-0033_enriched.csv` - enriched forklift trajectory sample
+- `output/forklift_usage_summary.csv` - forklift usage summary for Power BI-style reporting
 
 ## Current status
-- sample CSV ingestion works
-- row normalization works
-- KPI summary generation works
+- warehouse sample CSV ingestion works
+- warehouse row normalization works
+- warehouse KPI summary generation works
+- forklift trajectory enrichment works
+- forklift usage summary generation works
 - built-in unit tests pass
 
 ## Next steps
 - add CLI argument support for arbitrary input/output files
-- add heuristic scoring
+- add Power BI-ready sales summary output
+- add multi-device batch ingestion for tracker files
 - add anomaly/validation reporting
 - test against a real warehouse extract

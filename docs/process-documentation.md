@@ -133,10 +133,21 @@ For each meaningful function/component/module, document:
 - This is still a proof-of-concept signal, not yet a production warehouse truth model.
 - The Google Drive project folder has been mirrored locally into `docs/google-knowledge-base/` so prior Google Docs can be used as repo-accessible project knowledge.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Documented forklift tracker data inputs and scaffolded a forklift usage ingestion/summarization path.
+- Why: Dashboard scope was narrowed to top-selling items and most-used forklifts, which requires tracker trajectory/state files in addition to the warehouse movement export.
+- Impact: The project now has a clear split between sales reporting inputs and forklift usage reporting inputs.
+
+## Operational Notes
+- Sales reporting should continue to use the warehouse movement export.
+- Forklift usage reporting should use the tracker master file plus `<device_id>.csv` and `<device_id>_STATE.csv` files.
+- The tracker pipeline derives quality-aware distance and simple usage metrics that are suitable for a first Power BI dashboard.
+
 ## Next Steps
+- Generate sample forklift usage outputs from the sample tracker files.
+- Add Power BI-ready sales summary output.
 - Re-read imported Google Docs and reconcile any useful project decisions into local working docs.
-- Add CLI argument support and make ingestion configurable.
-- Narrow the Power BI MVP to current reporting goals.
 - Sync polished updates back into the Google Doc when useful.
 
 ## Update Log
