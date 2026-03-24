@@ -264,9 +264,16 @@ For each meaningful function/component/module, document:
 - Alternatives considered: hand-authored scenario sequences only.
 - Follow-up needed: build task dataclasses and an order-to-task generator.
 
+## Decisions
+- Decision: The RL layer should eventually optimize both routing and layout recommendations, including proposed zone moves when justified by changing sales patterns.
+- Reason: The business goal is not only better route execution inside today's warehouse but also identifying when a changed layout would produce enough efficiency gain to justify real-world operational change.
+- Alternatives considered: fixed-layout routing optimization only.
+- Follow-up needed: separate route-only and layout-change action spaces and define change-cost penalties.
+
 ## Operational Notes
 - The current intended architecture is now: Streamlit layout -> canonical warehouse config/topology -> order/inventory-driven task generation -> Gymnasium environment execution -> analytics/Power BI reporting.
 - Task generation should eventually use what was ordered, where it is located, and how it must be processed.
+- The RL roadmap now includes two optimization layers: route execution within a layout and higher-level layout/zone-move recommendations across time.
 - The current manual zone-sequence task support remains useful as a simple baseline and testing mechanism.
 
 ## Recent Changes

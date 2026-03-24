@@ -13,6 +13,7 @@
 - Default process documentation sync target: https://docs.google.com/document/d/1fTt_3JAG4_u5jb5yyL3o2rqV4ggKh2Bv497zYz1Qw5A/edit?tab=t.0
 - Warehouse project decision: use ERPNext as the initial WMS for this project; broader system additions can come later
 - Warehouse architecture direction: treat Streamlit layout input as the warehouse/world definition, operational sales/order/inventory data as task-generation input, and Gymnasium as the execution/simulation layer that runs those generated forklift tasks inside the configured warehouse topology
+- Warehouse optimization direction: RL should not only learn routing within a fixed layout; it should also be able to propose layout changes such as moving zones when changing sales patterns justify the operational disruption and expected efficiency gains
 - Preference: focus on test-driven development when building products
 - Name: Lancelot
 - Preferred form of address: Lancelot
