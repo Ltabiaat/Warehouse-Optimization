@@ -14,6 +14,10 @@ A small, test-first data pipeline for normalizing real warehouse movement export
 - `warehouse_mvp/normalizer.py` - row normalization logic
 - `tests/test_normalizer.py` - initial unit tests
 
+## Sample data
+- `data/sample_warehouse_export.csv` contains a realistic sample export using the original Japanese headers.
+- It includes inbound, outbound, transfer, and inventory-count style rows for MVP testing.
+
 ## Next steps
 - add CSV ingestion CLI
 - add dataframe/batch processing

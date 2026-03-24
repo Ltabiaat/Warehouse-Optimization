@@ -123,7 +123,7 @@ For each meaningful function/component/module, document:
 
 ## Next Steps
 - Add CSV file ingestion and batch normalization.
-- Create a sample raw export fixture and generate a normalized output example.
+- Generate a normalized output example from the sample raw export fixture.
 - Define first KPI set and baseline prioritization heuristic.
 - Sync a polished summary of this work into the Google Doc.
 
