@@ -192,10 +192,40 @@ For each meaningful function/component/module, document:
 - The current Streamlit layout editor now uses direct cell editing with allowed values: blank, `X`, and `A-F`.
 - This is still an MVP, but it should be materially easier to use than the previous button grid.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Defined and scaffolded the conversion path from Streamlit layout JSON into canonical warehouse config, topology, and task objects for future Gymnasium use.
+- Why: The layout app is intended to become the front-end input layer for custom environment generation.
+- Impact: The project now has a concrete internal pipeline from user-entered warehouse layout data toward environment construction.
+
+## Functions and Components
+- Name: `layout_loader.warehouse_config_from_dict`
+- Location: `warehouse_mvp/src/warehouse_mvp/layout_loader.py`
+- Responsibility: Validates and converts saved Streamlit JSON into a canonical `WarehouseConfig` model.
+- Inputs: parsed layout JSON data.
+- Outputs: typed warehouse configuration object.
+- Side effects: none.
+- Important edge cases: rejects out-of-bounds cells and overlapping blocked/zone cells.
+- Notes for future changes: extend with forklift start positions, docks, and equipment metadata.
+
+- Name: `topology.build_topology`
+- Location: `warehouse_mvp/src/warehouse_mvp/topology.py`
+- Responsibility: Converts a warehouse configuration into reachable cells, zone lookup, and adjacency graph.
+- Inputs: `WarehouseConfig`.
+- Outputs: `WarehouseTopology`.
+- Side effects: none.
+- Important edge cases: all-blocked layouts will fail later when no reachable start exists.
+- Notes for future changes: extend beyond 4-neighbor movement and add traversal costs.
+
+## Operational Notes
+- The current Streamlit config is now formally treated as a configuration layer, not as the Gymnasium environment itself.
+- The intended path is: Streamlit JSON -> canonical config -> topology -> tasks -> Gymnasium environment.
+- MVP environment scope should start with single-forklift, grid-based navigation to named zones.
+
 ## Next Steps
-- Verify the revised Streamlit UX with real usage.
-- Connect saved layout JSON to later graph/simulation conversion logic.
+- Add a first custom Gymnasium environment module on top of the new layout/topology models.
 - Add forklift start positions and dock markers later if needed.
+- Verify the revised Streamlit UX with real usage.
 - Sync polished updates back into the Google Doc when useful.
 
 ## Update Log
