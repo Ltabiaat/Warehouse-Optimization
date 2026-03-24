@@ -318,10 +318,31 @@ For each meaningful function/component/module, document:
 - The current demo uses a generated outbound task and a hard-coded action sequence; because the route is topology-constrained, invalid moves correctly hit blocked areas and incur penalties.
 - A path planner or heuristic policy runner would make the generated-task demo complete routes more reliably than a fixed action script.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Added the first route RL training layer, including an environment factory and PPO training entrypoint.
+- Why: The immediate priority is route reinforcement learning on top of the fixed-layout environment and generated task pipeline.
+- Impact: The project now has a trainable RL path for fixed-layout route execution.
+
+## Functions and Components
+- Name: `rl_env_factory.build_route_env`
+- Location: `warehouse_mvp/src/warehouse_mvp/rl_env_factory.py`
+- Responsibility: Builds a route-training environment from saved layout config plus operational CSV input.
+- Inputs: layout path, warehouse CSV path, zone mappings, processing rules, default dropoff zone.
+- Outputs: configured `WarehouseNavigationEnv`.
+- Side effects: none.
+- Important edge cases: fails if no outbound tasks can be generated from operational data.
+- Notes for future changes: support task sampling rather than single fixed task selection.
+
+## Operational Notes
+- The route RL layer currently assumes a fixed layout and focuses on route/task execution only.
+- PPO via Stable-Baselines3 is the first training baseline for this layer.
+- Layout-change optimization remains a later layer above this fixed-layout route execution layer.
+
 ## Next Steps
-- Add a simple planner/heuristic runner so generated tasks can complete automatically in the demo.
+- Install SB3 and smoke-test the route training script in the project venv.
+- Add task sampling across multiple generated tasks for richer training.
 - Add inbound putaway and internal transfer task generators.
-- Verify the revised Streamlit UX with real usage.
 - Sync polished updates back into the Google Doc when useful.
 
 ## Update Log
