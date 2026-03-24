@@ -28,6 +28,9 @@ class TestLayoutEnvDemo(unittest.TestCase):
                     {"x": 5, "y": 0, "zone": "A"},
                     {"x": 5, "y": 4, "zone": "C"},
                 ],
+                "start_cells": [{"x": 0, "y": 0}],
+                "inbound_docks": [{"x": 0, "y": 4}],
+                "outbound_docks": [{"x": 5, "y": 4}],
             }
         )
         task = make_simple_zone_task(config, ["A", "C"])

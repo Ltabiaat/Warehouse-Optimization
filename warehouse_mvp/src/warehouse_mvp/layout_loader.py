@@ -17,7 +17,17 @@ def load_layout_config(path: str | Path) -> WarehouseConfig:
 
 
 def warehouse_config_from_dict(data: dict[str, Any]) -> WarehouseConfig:
-    required = ["warehouse_name", "width", "height", "forklift_count", "blocked_cells", "zone_cells"]
+    required = [
+        "warehouse_name",
+        "width",
+        "height",
+        "forklift_count",
+        "blocked_cells",
+        "zone_cells",
+        "start_cells",
+        "inbound_docks",
+        "outbound_docks",
+    ]
     missing = [field for field in required if field not in data]
     if missing:
         raise LayoutValidationError(f"Missing required fields: {missing}")
@@ -32,11 +42,18 @@ def warehouse_config_from_dict(data: dict[str, Any]) -> WarehouseConfig:
 
     blocked_cells = frozenset(_parse_cell(cell, width, height) for cell in data["blocked_cells"])
     zone_cells = tuple(_parse_zone_cell(cell, width, height) for cell in data["zone_cells"])
+    start_cells = tuple(_parse_cell(cell, width, height) for cell in data["start_cells"])
+    inbound_docks = tuple(_parse_cell(cell, width, height) for cell in data["inbound_docks"])
+    outbound_docks = tuple(_parse_cell(cell, width, height) for cell in data["outbound_docks"])
 
     blocked_xy = {(c.x, c.y) for c in blocked_cells}
     for zc in zone_cells:
         if (zc.x, zc.y) in blocked_xy:
             raise LayoutValidationError(f"Zone cell overlaps blocked cell at {(zc.x, zc.y)}")
+    for label, cells in (("start", start_cells), ("inbound dock", inbound_docks), ("outbound dock", outbound_docks)):
+        for cell in cells:
+            if (cell.x, cell.y) in blocked_xy:
+                raise LayoutValidationError(f"{label} overlaps blocked cell at {(cell.x, cell.y)}")
 
     return WarehouseConfig(
         warehouse_name=str(data["warehouse_name"]),
@@ -45,6 +62,9 @@ def warehouse_config_from_dict(data: dict[str, Any]) -> WarehouseConfig:
         forklift_count=forklift_count,
         blocked_cells=blocked_cells,
         zone_cells=zone_cells,
+        start_cells=start_cells,
+        inbound_docks=inbound_docks,
+        outbound_docks=outbound_docks,
     )
 
 

@@ -24,6 +24,9 @@ class WarehouseConfig:
     forklift_count: int
     blocked_cells: frozenset[Cell]
     zone_cells: tuple[ZoneCell, ...]
+    start_cells: tuple[Cell, ...]
+    inbound_docks: tuple[Cell, ...]
+    outbound_docks: tuple[Cell, ...]
 
 
 @dataclass(frozen=True)

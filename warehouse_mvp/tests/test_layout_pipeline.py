@@ -17,6 +17,9 @@ class TestLayoutPipeline(unittest.TestCase):
             "forklift_count": 2,
             "blocked_cells": [{"x": 1, "y": 1}],
             "zone_cells": [{"x": 3, "y": 2, "zone": "A"}],
+            "start_cells": [{"x": 0, "y": 0}],
+            "inbound_docks": [{"x": 0, "y": 2}],
+            "outbound_docks": [{"x": 3, "y": 0}],
         }
         config = warehouse_config_from_dict(data)
         self.assertEqual(config.width, 4)
@@ -24,6 +27,7 @@ class TestLayoutPipeline(unittest.TestCase):
         self.assertEqual(config.forklift_count, 2)
         self.assertEqual(len(config.blocked_cells), 1)
         self.assertEqual(len(config.zone_cells), 1)
+        self.assertEqual(len(config.start_cells), 1)
 
     def test_layout_loader_rejects_zone_on_blocked_cell(self):
         data = {
@@ -33,6 +37,9 @@ class TestLayoutPipeline(unittest.TestCase):
             "forklift_count": 2,
             "blocked_cells": [{"x": 1, "y": 1}],
             "zone_cells": [{"x": 1, "y": 1, "zone": "A"}],
+            "start_cells": [],
+            "inbound_docks": [],
+            "outbound_docks": [],
         }
         with self.assertRaises(LayoutValidationError):
             warehouse_config_from_dict(data)
@@ -46,6 +53,9 @@ class TestLayoutPipeline(unittest.TestCase):
                 "forklift_count": 1,
                 "blocked_cells": [{"x": 1, "y": 1}],
                 "zone_cells": [{"x": 2, "y": 2, "zone": "C"}],
+                "start_cells": [{"x": 0, "y": 0}],
+                "inbound_docks": [],
+                "outbound_docks": [],
             }
         )
         topology = build_topology(config)
@@ -53,7 +63,7 @@ class TestLayoutPipeline(unittest.TestCase):
         self.assertIn(start, topology.adjacency_map)
         self.assertIn("C", topology.zone_to_cells)
 
-    def test_task_builder_uses_first_reachable_cell(self):
+    def test_task_builder_prefers_start_cell(self):
         config = warehouse_config_from_dict(
             {
                 "warehouse_name": "Demo",
@@ -62,6 +72,9 @@ class TestLayoutPipeline(unittest.TestCase):
                 "forklift_count": 1,
                 "blocked_cells": [{"x": 0, "y": 0}],
                 "zone_cells": [{"x": 1, "y": 1, "zone": "A"}],
+                "start_cells": [{"x": 1, "y": 0}],
+                "inbound_docks": [],
+                "outbound_docks": [],
             }
         )
         task = make_simple_zone_task(config, ["A", "C"])
@@ -77,6 +90,9 @@ class TestLayoutPipeline(unittest.TestCase):
             "forklift_count": 3,
             "blocked_cells": [{"x": 2, "y": 2}],
             "zone_cells": [{"x": 4, "y": 4, "zone": "B"}],
+            "start_cells": [{"x": 0, "y": 0}],
+            "inbound_docks": [{"x": 0, "y": 4}],
+            "outbound_docks": [{"x": 4, "y": 0}],
         }
         with tempfile.TemporaryDirectory() as tmpdir:
             path = Path(tmpdir) / "layout.json"

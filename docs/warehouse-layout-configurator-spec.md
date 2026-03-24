@@ -9,6 +9,8 @@ Provide a simple user-facing app where a user can:
 - specify number of forklifts
 - mark walls or blocked/unreachable areas
 - define named zones such as A, B, C that forklifts may need to reach
+- mark forklift start positions
+- mark inbound and outbound dock cells
 
 This app is intended to become the first warehouse-configuration input surface before simulation or Gymnasium work.
 
@@ -22,40 +24,31 @@ This app is intended to become the first warehouse-configuration input surface b
 
 ### 2. Layout grid editor
 - render a 2D grid as a cleaner table-style editor
-- allow users to set cells directly as blank, blocked (`X`), or named zones (`A-F`)
+- allow users to set cells directly as blank, blocked (`X`), named zones (`A-F`), forklift starts (`S`), inbound docks (`I`), or outbound docks (`O`)
 - blocked cells represent walls, shelving, pillars, restricted zones, or otherwise unreachable areas
 - zones represent reachable operating areas forklifts may need to visit
 
 ### 3. Exportable configuration
 - save the current configuration to JSON
-- JSON should include warehouse dimensions, forklift count, blocked cell coordinates, and zone cell assignments
+- JSON should include warehouse dimensions, forklift count, blocked cell coordinates, zone cell assignments, start cells, inbound docks, and outbound docks
 
 ## Representation model
 
 ### Grid-based representation
 For MVP, model the warehouse as a simple 2D grid.
 
-Pros:
-- easy to understand
-- easy to edit in Streamlit
-- easy to convert into graph nodes later
-- enough for first-pass route/path simulation work
-
 ### Blocked cells
-Blocked cells should represent any area forklifts must not traverse, including:
-- walls
-- racks/shelves
-- safety zones
-- structural obstacles
-- unreachable/loading-only areas
+Blocked cells should represent any area forklifts must not traverse.
 
 ### Zones
-Zones should represent meaningful destinations or operating areas, including:
-- pick zones
-- storage zones
-- inbound/outbound zones
-- temperature-controlled areas
-- any area forklifts may need to reach as part of a task
+Zones should represent meaningful destinations or operating areas.
+
+### Start positions
+Start positions represent where forklifts may begin an episode or route.
+
+### Dock markers
+- inbound docks represent receiving entry/staging points
+- outbound docks represent shipping/staging points
 
 ## Output format
 
@@ -67,23 +60,17 @@ Suggested JSON structure:
   "width": 12,
   "height": 8,
   "forklift_count": 3,
-  "blocked_cells": [
-    {"x": 2, "y": 1},
-    {"x": 2, "y": 2}
-  ],
-  "zone_cells": [
-    {"x": 5, "y": 1, "zone": "A"},
-    {"x": 8, "y": 6, "zone": "C"}
-  ]
+  "blocked_cells": [{"x": 2, "y": 1}],
+  "zone_cells": [{"x": 5, "y": 1, "zone": "A"}],
+  "start_cells": [{"x": 0, "y": 0}],
+  "inbound_docks": [{"x": 0, "y": 7}],
+  "outbound_docks": [{"x": 11, "y": 7}]
 }
 ```
 
 ## Future enhancements
 - draggable drawing tools instead of single-cell clicks
 - named zone editing beyond A-F
-- inbound/outbound dock templates
-- storage rack templates
 - one-way aisles
-- forklift start positions
-- loading and staging areas
+- equipment-specific start positions
 - export directly into simulation environment config

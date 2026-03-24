@@ -243,10 +243,21 @@ For each meaningful function/component/module, document:
 - This is enough to prove the Streamlit-to-environment path before adding ERPNext demand coupling or multi-agent complexity.
 - Gymnasium is now an explicit project dependency inside the local warehouse MVP environment.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Extended the layout schema and Streamlit app to support forklift start positions plus inbound and outbound dock markers.
+- Why: Environment generation should be able to use explicit starts and dock semantics instead of relying only on generic reachable cells.
+- Impact: The configuration layer now captures more realistic routing anchors for future tasks and scenarios.
+
+## Operational Notes
+- The layout grid now supports `S` for start cells, `I` for inbound docks, and `O` for outbound docks.
+- Task generation currently prefers the first configured start cell when available.
+- Dock markers are stored and validated now, even if the first Gymnasium environment does not yet use them deeply.
+
 ## Next Steps
-- Add a small runner/demo that loads saved layout JSON and instantiates the environment automatically.
-- Add forklift start positions and dock markers later if needed.
+- Use dock markers in future task generators, e.g. inbound -> zone -> outbound workflows.
 - Verify the revised Streamlit UX with real usage.
+- Add richer scenario generation on top of starts/docks later.
 - Sync polished updates back into the Google Doc when useful.
 
 ## Update Log

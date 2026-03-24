@@ -21,6 +21,9 @@ class TestWarehouseNavigationEnv(unittest.TestCase):
                 "forklift_count": 1,
                 "blocked_cells": [{"x": 1, "y": 1}],
                 "zone_cells": [{"x": 3, "y": 2, "zone": "A"}],
+                "start_cells": [{"x": 0, "y": 0}],
+                "inbound_docks": [],
+                "outbound_docks": [],
             }
         )
         task = make_simple_zone_task(config, ["A"])
@@ -38,12 +41,15 @@ class TestWarehouseNavigationEnv(unittest.TestCase):
                 "forklift_count": 1,
                 "blocked_cells": [],
                 "zone_cells": [{"x": 2, "y": 2, "zone": "A"}],
+                "start_cells": [{"x": 0, "y": 0}],
+                "inbound_docks": [],
+                "outbound_docks": [],
             }
         )
         task = make_simple_zone_task(config, ["A"])
         env = WarehouseNavigationEnv(config, task, max_steps=20)
         env.reset()
-        obs, reward, terminated, truncated, info = env.step(0)  # up from 0,0 -> invalid
+        obs, reward, terminated, truncated, info = env.step(0)
         self.assertEqual(obs["forklift_position"], [0, 0])
         self.assertLess(reward, -1)
         self.assertFalse(terminated)
@@ -59,12 +65,15 @@ class TestWarehouseNavigationEnv(unittest.TestCase):
                 "forklift_count": 1,
                 "blocked_cells": [],
                 "zone_cells": [{"x": 1, "y": 0, "zone": "A"}],
+                "start_cells": [{"x": 0, "y": 0}],
+                "inbound_docks": [],
+                "outbound_docks": [],
             }
         )
         task = make_simple_zone_task(config, ["A"])
         env = WarehouseNavigationEnv(config, task, max_steps=20)
         env.reset()
-        obs, reward, terminated, truncated, info = env.step(3)  # right to A
+        obs, reward, terminated, truncated, info = env.step(3)
         self.assertEqual(obs["forklift_position"], [1, 0])
         self.assertTrue(terminated)
         self.assertFalse(truncated)
@@ -80,6 +89,9 @@ class TestWarehouseNavigationEnv(unittest.TestCase):
                 "forklift_count": 1,
                 "blocked_cells": [{"x": 1, "y": 1}],
                 "zone_cells": [{"x": 1, "y": 0, "zone": "A"}],
+                "start_cells": [{"x": 0, "y": 0}],
+                "inbound_docks": [{"x": 0, "y": 1}],
+                "outbound_docks": [],
             }
         )
         task = make_simple_zone_task(config, ["A"])

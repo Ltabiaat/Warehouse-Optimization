@@ -30,6 +30,9 @@ def ensure_demo_layout_exists() -> Path:
             {"x": 5, "y": 0, "zone": "A"},
             {"x": 5, "y": 4, "zone": "C"},
         ],
+        "start_cells": [{"x": 0, "y": 0}],
+        "inbound_docks": [{"x": 0, "y": 4}],
+        "outbound_docks": [{"x": 5, "y": 4}],
     }
     SAMPLE_LAYOUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     SAMPLE_LAYOUT_PATH.write_text(json.dumps(sample_payload, indent=2), encoding="utf-8")
@@ -45,6 +48,9 @@ def main() -> None:
     obs, info = env.reset()
     print(f"Loaded layout: {layout_path}")
     print(f"Warehouse: {config.warehouse_name}")
+    print(f"Starts: {config.start_cells}")
+    print(f"Inbound docks: {config.inbound_docks}")
+    print(f"Outbound docks: {config.outbound_docks}")
     print(f"Task target sequence: {task.target_zones}")
     print("\nInitial grid:")
     print(env.render())

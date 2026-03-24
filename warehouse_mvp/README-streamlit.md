@@ -7,6 +7,8 @@ A cleaner Streamlit UI for defining:
 - number of forklifts
 - blocked/unreachable cells
 - named zones on the grid
+- forklift start positions
+- inbound and outbound dock markers
 
 ## Run
 
@@ -23,8 +25,12 @@ streamlit run streamlit_app.py
 - Edit cells directly in the table-style grid
 - Use:
   - `X` for blocked cells
+  - `S` for forklift starts
+  - `I` for inbound docks
+  - `O` for outbound docks
   - `A-F` for named zones
   - blank for normal reachable cells
+- Click **Apply grid edits**
 - Save the configuration to JSON
 
 ## Output
@@ -37,7 +43,6 @@ The JSON includes:
 - forklift count
 - blocked cells
 - zone cell assignments
-
-## Notes
-
-This is an MVP grid-based editor intended as a front-end for later graph/simulation conversion.
+- start cells
+- inbound docks
+- outbound docks
