@@ -1,0 +1,8 @@
+item_code,item_name,total_qty_out,outbound_event_count,distinct_clients,distinct_locations
+SKU-005,ヨーグルト,36,1,1,1
+SKU-002,鶏むね肉,18,1,1,1
+SKU-003,ミネラルウォーター,8,1,1,2
+SKU-001,冷凍餃子,5,1,1,1
+SKU-007,冷凍えび,3,1,1,1
+SKU-006,ポテトチップスうすしお,2,1,1,1
+SKU-004,カップ麺しょうゆ,0,0,1,1

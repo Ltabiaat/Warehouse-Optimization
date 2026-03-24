@@ -144,9 +144,20 @@ For each meaningful function/component/module, document:
 - Forklift usage reporting should use the tracker master file plus `<device_id>.csv` and `<device_id>_STATE.csv` files.
 - The tracker pipeline derives quality-aware distance and simple usage metrics that are suitable for a first Power BI dashboard.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Added Power BI-ready sales summary generation and a dashboard specification for the narrowed MVP.
+- Why: The immediate goal is now a practical dashboard for top-selling items and most-used forklifts, not broader optimization logic.
+- Impact: The project now has concrete reporting outputs and a dashboard build spec.
+
+## Operational Notes
+- `sales_summary.csv` is the current Power BI-ready sales source.
+- `forklift_usage_summary.csv` is the current Power BI-ready forklift usage source.
+- Current dashboard semantics are intentionally careful: outbound quantity is not revenue, and tracker activity is a usage proxy rather than exact utilization truth.
+
 ## Next Steps
-- Generate sample forklift usage outputs from the sample tracker files.
-- Add Power BI-ready sales summary output.
+- Generate the sales summary sample output.
+- Finalize any field-name adjustments needed for Power BI import convenience.
 - Re-read imported Google Docs and reconcile any useful project decisions into local working docs.
 - Sync polished updates back into the Google Doc when useful.
 
