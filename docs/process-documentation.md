@@ -290,8 +290,29 @@ For each meaningful function/component/module, document:
 - Current generated sequences are suitable for turning order/work demand into environment-ready route objectives.
 - Manual zone-sequence tasks still remain useful for smoke tests and baseline debugging.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Wired generated outbound task sequences into a demo environment runner via a task-sequence adapter.
+- Why: Needed to prove the architecture path from operational data to environment execution instead of stopping at task generation.
+- Impact: The project now demonstrates operational rows -> generated task -> task sequence -> navigation task -> Gymnasium environment.
+
+## Functions and Components
+- Name: `task_sequence_adapter.sequence_to_navigation_task`
+- Location: `warehouse_mvp/src/warehouse_mvp/task_sequence_adapter.py`
+- Responsibility: Converts generated task sequences into zone-addressable navigation tasks for the current environment.
+- Inputs: `WarehouseConfig`, `TaskSequence`.
+- Outputs: `NavigationTask`.
+- Side effects: none.
+- Important edge cases: currently only zone-addressable steps are usable by the environment adapter.
+- Notes for future changes: replace this adapter once the environment consumes richer task semantics directly.
+
+## Operational Notes
+- The generated-task demo now proves the intended architecture path end to end.
+- The current demo uses a generated outbound task and a hard-coded action sequence; because the route is topology-constrained, invalid moves correctly hit blocked areas and incur penalties.
+- A path planner or heuristic policy runner would make the generated-task demo complete routes more reliably than a fixed action script.
+
 ## Next Steps
-- Connect generated task sequences to the Gymnasium environment runner.
+- Add a simple planner/heuristic runner so generated tasks can complete automatically in the demo.
 - Add inbound putaway and internal transfer task generators.
 - Verify the revised Streamlit UX with real usage.
 - Sync polished updates back into the Google Doc when useful.
