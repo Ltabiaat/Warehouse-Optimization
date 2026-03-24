@@ -4,6 +4,7 @@ import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+import pandas as pd
 import streamlit as st
 
 
@@ -20,97 +21,112 @@ class LayoutConfig:
 OUTPUT_DIR = Path(__file__).resolve().parent / "output"
 DEFAULT_CONFIG_PATH = OUTPUT_DIR / "warehouse_layout_config.json"
 ZONE_OPTIONS = ["A", "B", "C", "D", "E", "F"]
-ZONE_COLORS = {
-    "A": "#dbeafe",
-    "B": "#dcfce7",
-    "C": "#fef3c7",
-    "D": "#fee2e2",
-    "E": "#ede9fe",
-    "F": "#fce7f3",
+CELL_OPTIONS = ["", "X", *ZONE_OPTIONS]
+ZONE_LABELS = {
+    "": "Reachable",
+    "X": "Blocked",
+    "A": "Zone A",
+    "B": "Zone B",
+    "C": "Zone C",
+    "D": "Zone D",
+    "E": "Zone E",
+    "F": "Zone F",
 }
 
 
 def main() -> None:
     st.set_page_config(page_title="Warehouse Layout Configurator", layout="wide")
+    _inject_styles()
     st.title("Warehouse Layout Configurator")
-    st.caption("Define warehouse size, forklift count, blocked areas, and named zones for layout/simulation work.")
+    st.caption("Set warehouse size, forklift count, blocked areas, and named zones using a cleaner grid editor.")
 
     _init_state()
 
     with st.sidebar:
         st.header("Warehouse Settings")
         warehouse_name = st.text_input("Warehouse name", value=st.session_state.warehouse_name)
-        width = st.number_input("Grid width", min_value=4, max_value=100, value=st.session_state.width, step=1)
-        height = st.number_input("Grid height", min_value=4, max_value=100, value=st.session_state.height, step=1)
+        width = st.number_input("Grid width", min_value=4, max_value=40, value=st.session_state.width, step=1)
+        height = st.number_input("Grid height", min_value=4, max_value=30, value=st.session_state.height, step=1)
         forklift_count = st.number_input("Number of forklifts", min_value=1, max_value=500, value=st.session_state.forklift_count, step=1)
 
-        st.header("Editing Mode")
-        edit_mode = st.radio(
-            "What do you want to place?",
-            options=["Blocked cells", "Zones"],
-            index=0 if st.session_state.edit_mode == "Blocked cells" else 1,
-        )
-        selected_zone = st.selectbox("Zone label", options=ZONE_OPTIONS, index=ZONE_OPTIONS.index(st.session_state.selected_zone))
+        st.markdown("### Actions")
+        apply_size = st.button("Apply grid size", use_container_width=True)
+        clear_grid = st.button("Clear all cells", use_container_width=True)
+        save_config = st.button("Save configuration", type="primary", use_container_width=True)
 
-        resize_clicked = st.button("Apply grid size")
-        clear_blocked_clicked = st.button("Clear blocked cells")
-        clear_zones_clicked = st.button("Clear zones")
-        save_clicked = st.button("Save configuration")
+        st.markdown("### Cell legend")
+        for key in CELL_OPTIONS:
+            label = ZONE_LABELS[key]
+            display = key or "·"
+            st.markdown(f"- **{display}** = {label}")
 
-    st.session_state.edit_mode = edit_mode
-    st.session_state.selected_zone = selected_zone
-
-    if resize_clicked:
+    if apply_size:
+        st.session_state.warehouse_name = warehouse_name
         st.session_state.width = int(width)
         st.session_state.height = int(height)
-        st.session_state.warehouse_name = warehouse_name
         st.session_state.forklift_count = int(forklift_count)
-        _trim_grid_state()
+        _resize_grid(int(width), int(height))
 
     st.session_state.warehouse_name = warehouse_name
     st.session_state.forklift_count = int(forklift_count)
 
-    if clear_blocked_clicked:
-        st.session_state.blocked_cells = set()
+    if clear_grid:
+        st.session_state.grid_df = _empty_grid_df(st.session_state.height, st.session_state.width)
 
-    if clear_zones_clicked:
-        st.session_state.zone_cells = {}
+    left, right = st.columns([2.2, 1])
 
-    col1, col2 = st.columns([2, 1])
+    with left:
+        st.subheader("Layout editor")
+        st.write("Edit the grid directly: use `X` for blocked cells and `A-F` for named zones.")
+        st.info("Tip: start with a smaller grid, lay out walls/blocked cells first, then assign zones.")
 
-    with col1:
-        st.subheader("Layout grid")
-        st.write("Click cells to mark blocked areas or assign them to a named zone.")
-        _render_grid()
-
-    with col2:
-        st.subheader("Current configuration")
-        config = LayoutConfig(
-            warehouse_name=st.session_state.warehouse_name,
-            width=st.session_state.width,
-            height=st.session_state.height,
-            forklift_count=st.session_state.forklift_count,
-            blocked_cells=_serialize_blocked_cells(),
-            zone_cells=_serialize_zone_cells(),
+        edited_df = st.data_editor(
+            st.session_state.grid_df,
+            key="layout_editor",
+            use_container_width=True,
+            num_rows="fixed",
+            hide_index=True,
+            column_config={
+                col: st.column_config.SelectboxColumn(
+                    label=col,
+                    options=CELL_OPTIONS,
+                    required=False,
+                    width="small",
+                )
+                for col in st.session_state.grid_df.columns
+            },
         )
-        st.json(asdict(config))
-        st.metric("Blocked cells", len(st.session_state.blocked_cells))
-        st.metric("Zoned cells", len(st.session_state.zone_cells))
-        st.metric("Reachable cells", (st.session_state.width * st.session_state.height) - len(st.session_state.blocked_cells))
+        st.session_state.grid_df = edited_df.fillna("")
 
-        st.markdown("### Zone legend")
-        for zone in ZONE_OPTIONS:
-            color = ZONE_COLORS[zone]
-            st.markdown(
-                f"<div style='padding:4px 8px; border-radius:6px; background:{color}; margin-bottom:4px;'>Zone {zone}</div>",
-                unsafe_allow_html=True,
-            )
+    with right:
+        st.subheader("Configuration summary")
+        config = _build_config()
+        blocked_count = len(config.blocked_cells)
+        zoned_count = len(config.zone_cells)
+        total_cells = config.width * config.height
 
-        st.markdown("### Suggested use")
-        st.markdown("- blocked cells = walls, racks, pillars, safety zones")
-        st.markdown("- zones = areas forklifts may need to reach, such as A/B/C picking or storage zones")
+        c1, c2 = st.columns(2)
+        c1.metric("Blocked", blocked_count)
+        c2.metric("Zoned", zoned_count)
+        st.metric("Reachable", total_cells - blocked_count)
+        st.metric("Forklifts", config.forklift_count)
 
-    if save_clicked:
+        st.markdown("### Zone counts")
+        zone_counts = _zone_counts()
+        if zone_counts:
+            for zone, count in zone_counts.items():
+                st.markdown(f"- **Zone {zone}**: {count} cells")
+        else:
+            st.caption("No zones assigned yet.")
+
+        with st.expander("Preview JSON", expanded=False):
+            st.json(asdict(config))
+
+        st.markdown("### Suggested usage")
+        st.markdown("- `X` = walls, racks, pillars, safety zones")
+        st.markdown("- `A-F` = operating/destination zones forklifts should be able to reach")
+
+    if save_config:
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         DEFAULT_CONFIG_PATH.write_text(json.dumps(asdict(config), indent=2), encoding="utf-8")
         st.success(f"Saved configuration to {DEFAULT_CONFIG_PATH}")
@@ -125,86 +141,72 @@ def _init_state() -> None:
         st.session_state.height = 8
     if "forklift_count" not in st.session_state:
         st.session_state.forklift_count = 3
-    if "blocked_cells" not in st.session_state:
-        st.session_state.blocked_cells = set()
-    if "zone_cells" not in st.session_state:
-        st.session_state.zone_cells = {}
-    if "edit_mode" not in st.session_state:
-        st.session_state.edit_mode = "Blocked cells"
-    if "selected_zone" not in st.session_state:
-        st.session_state.selected_zone = "A"
+    if "grid_df" not in st.session_state:
+        st.session_state.grid_df = _empty_grid_df(st.session_state.height, st.session_state.width)
 
 
-def _render_grid() -> None:
-    width = st.session_state.width
-    height = st.session_state.height
-
-    for y in range(height):
-        cols = st.columns(width)
-        for x, col in enumerate(cols):
-            zone = st.session_state.zone_cells.get((x, y))
-            blocked = (x, y) in st.session_state.blocked_cells
-            label = "X" if blocked else zone or "·"
-            bg = "#111827" if blocked else ZONE_COLORS.get(zone, "#f8fafc")
-            fg = "white" if blocked else "#111827"
-            button_key = f"cellbtn_{x}_{y}"
-            col.markdown(
-                f"<div style='text-align:center; font-size:12px; color:#6b7280;'>{x},{y}</div>",
-                unsafe_allow_html=True,
-            )
-            if col.button(label, key=button_key, use_container_width=True):
-                _toggle_cell(x, y)
-            col.markdown(
-                f"<div style='height:6px; background:{bg}; border-radius:4px; margin-top:-4px; margin-bottom:8px;'></div>",
-                unsafe_allow_html=True,
-            )
+def _empty_grid_df(height: int, width: int) -> pd.DataFrame:
+    return pd.DataFrame([["" for _ in range(width)] for _ in range(height)], columns=[str(x) for x in range(width)])
 
 
-def _toggle_cell(x: int, y: int) -> None:
-    cell = (x, y)
-    if st.session_state.edit_mode == "Blocked cells":
-        if cell in st.session_state.blocked_cells:
-            st.session_state.blocked_cells.discard(cell)
-        else:
-            st.session_state.blocked_cells.add(cell)
-            st.session_state.zone_cells.pop(cell, None)
-    else:
-        if cell in st.session_state.blocked_cells:
-            return
-        current = st.session_state.zone_cells.get(cell)
-        if current == st.session_state.selected_zone:
-            st.session_state.zone_cells.pop(cell, None)
-        else:
-            st.session_state.zone_cells[cell] = st.session_state.selected_zone
+def _resize_grid(width: int, height: int) -> None:
+    old_df = st.session_state.grid_df.copy()
+    new_df = _empty_grid_df(height, width)
+    min_h = min(height, len(old_df.index))
+    min_w = min(width, len(old_df.columns))
+    for y in range(min_h):
+        for x in range(min_w):
+            new_df.iat[y, x] = old_df.iat[y, x]
+    st.session_state.grid_df = new_df
 
 
-def _trim_grid_state() -> None:
-    width = st.session_state.width
-    height = st.session_state.height
-    st.session_state.blocked_cells = {
-        (x, y)
-        for (x, y) in st.session_state.blocked_cells
-        if x < width and y < height
-    }
-    st.session_state.zone_cells = {
-        (x, y): zone
-        for (x, y), zone in st.session_state.zone_cells.items()
-        if x < width and y < height
-    }
+def _build_config() -> LayoutConfig:
+    blocked_cells: list[dict[str, int]] = []
+    zone_cells: list[dict[str, int | str]] = []
+    df = st.session_state.grid_df.fillna("")
+
+    for y, row in df.iterrows():
+        for x_str, value in row.items():
+            x = int(x_str)
+            value = str(value).strip().upper()
+            if value == "X":
+                blocked_cells.append({"x": x, "y": int(y)})
+            elif value in ZONE_OPTIONS:
+                zone_cells.append({"x": x, "y": int(y), "zone": value})
+
+    return LayoutConfig(
+        warehouse_name=st.session_state.warehouse_name,
+        width=st.session_state.width,
+        height=st.session_state.height,
+        forklift_count=st.session_state.forklift_count,
+        blocked_cells=blocked_cells,
+        zone_cells=zone_cells,
+    )
 
 
-def _serialize_blocked_cells() -> list[dict[str, int]]:
-    return [
-        {"x": x, "y": y}
-        for x, y in sorted(st.session_state.blocked_cells, key=lambda cell: (cell[1], cell[0]))
-    ]
+def _zone_counts() -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for cell in _build_config().zone_cells:
+        zone = str(cell["zone"])
+        counts[zone] = counts.get(zone, 0) + 1
+    return dict(sorted(counts.items()))
 
 
-def _serialize_zone_cells() -> list[dict[str, int | str]]:
-    return [
-        {"x": x, "y": y, "zone": zone}
-        for (x, y), zone in sorted(st.session_state.zone_cells.items(), key=lambda item: (item[0][1], item[0][0]))
-    ]
+def _inject_styles() -> None:
+    st.markdown(
+        """
+        <style>
+        .stDataFrame, .stDataEditor {border-radius: 12px;}
+        [data-testid="stMetric"] {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            padding: 10px;
+            border-radius: 12px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":

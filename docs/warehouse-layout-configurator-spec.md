@@ -21,10 +21,10 @@ This app is intended to become the first warehouse-configuration input surface b
 - forklift count
 
 ### 2. Layout grid editor
-- render a 2D grid
-- allow users to mark cells as blocked
+- render a 2D grid as a cleaner table-style editor
+- allow users to set cells directly as blank, blocked (`X`), or named zones (`A-F`)
 - blocked cells represent walls, shelving, pillars, restricted zones, or otherwise unreachable areas
-- allow users to assign cells to named zones such as A/B/C
+- zones represent reachable operating areas forklifts may need to visit
 
 ### 3. Exportable configuration
 - save the current configuration to JSON

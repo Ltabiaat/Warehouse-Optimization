@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A simple Streamlit UI for defining:
+A cleaner Streamlit UI for defining:
 - warehouse layout size
 - number of forklifts
 - blocked/unreachable cells
@@ -17,6 +17,16 @@ source .venv/bin/activate
 streamlit run streamlit_app.py
 ```
 
+## How to use
+
+- Resize the grid in the sidebar
+- Edit cells directly in the table-style grid
+- Use:
+  - `X` for blocked cells
+  - `A-F` for named zones
+  - blank for normal reachable cells
+- Save the configuration to JSON
+
 ## Output
 
 When saved, the app writes:
@@ -30,7 +40,4 @@ The JSON includes:
 
 ## Notes
 
-This is an MVP grid-based editor.
-It is intended to be a simple front-end for later graph/simulation conversion.
-Blocked cells represent places forklifts cannot traverse.
-Zones represent places forklifts may need to reach.
+This is an MVP grid-based editor intended as a front-end for later graph/simulation conversion.

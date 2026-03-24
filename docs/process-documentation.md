@@ -182,8 +182,18 @@ For each meaningful function/component/module, document:
 - Blocked cells represent walls, racks, structural obstacles, and any area forklifts should not traverse.
 - Zone cells represent named target/operating areas that forklifts may need to reach.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Reworked the Streamlit layout UI into a cleaner table-style grid editor.
+- Why: The earlier button-per-cell interaction was too clumsy and visually noisy.
+- Impact: Users can now edit blocked cells and zones more directly in a spreadsheet-like layout.
+
+## Operational Notes
+- The current Streamlit layout editor now uses direct cell editing with allowed values: blank, `X`, and `A-F`.
+- This is still an MVP, but it should be materially easier to use than the previous button grid.
+
 ## Next Steps
-- Relaunch the Streamlit app and verify the zone editing UX.
+- Verify the revised Streamlit UX with real usage.
 - Connect saved layout JSON to later graph/simulation conversion logic.
 - Add forklift start positions and dock markers later if needed.
 - Sync polished updates back into the Google Doc when useful.
