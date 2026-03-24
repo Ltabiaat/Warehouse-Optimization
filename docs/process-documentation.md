@@ -222,8 +222,29 @@ For each meaningful function/component/module, document:
 - The intended path is: Streamlit JSON -> canonical config -> topology -> tasks -> Gymnasium environment.
 - MVP environment scope should start with single-forklift, grid-based navigation to named zones.
 
+## Recent Changes
+- Date: 2026-03-24
+- Change: Added the first custom Gymnasium environment (`WarehouseNavigationEnv`) built on top of the Streamlit layout conversion pipeline.
+- Why: Needed a concrete runnable environment that turns saved warehouse layout input into navigation tasks for RL/simulation work.
+- Impact: The project now has a working first environment for single-forklift navigation to named zones.
+
+## Functions and Components
+- Name: `gym_env.WarehouseNavigationEnv`
+- Location: `warehouse_mvp/src/warehouse_mvp/gym_env.py`
+- Responsibility: Provides a grid-based Gymnasium environment with blocked-cell handling, zone targets, reward logic, and episode termination.
+- Inputs: `WarehouseConfig`, `NavigationTask`, and `max_steps`.
+- Outputs: Gymnasium reset/step observations, rewards, done flags, and info.
+- Side effects: none.
+- Important edge cases: invalid moves stay in place and incur penalties; all target zones reached terminates the episode.
+- Notes for future changes: extend to multiple forklifts, richer tasks, and better movement cost modeling.
+
+## Operational Notes
+- The first environment is intentionally narrow: single forklift, grid navigation, blocked cells, and named zones.
+- This is enough to prove the Streamlit-to-environment path before adding ERPNext demand coupling or multi-agent complexity.
+- Gymnasium is now an explicit project dependency inside the local warehouse MVP environment.
+
 ## Next Steps
-- Add a first custom Gymnasium environment module on top of the new layout/topology models.
+- Add a small runner/demo that loads saved layout JSON and instantiates the environment automatically.
 - Add forklift start positions and dock markers later if needed.
 - Verify the revised Streamlit UX with real usage.
 - Sync polished updates back into the Google Doc when useful.
