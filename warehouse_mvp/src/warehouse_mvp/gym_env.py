@@ -79,7 +79,7 @@ class WarehouseNavigationEnv(gym.Env if gym is not None else object):
         reward = -1.0
         terminated = False
         truncated = False
-        info = self._info()
+        extra_info: dict[str, Any] = {}
 
         dx, dy = ACTION_TO_DELTA[action]
         candidate = Cell(self.current_position.x + dx, self.current_position.y + dy)
@@ -88,17 +88,17 @@ class WarehouseNavigationEnv(gym.Env if gym is not None else object):
             reward -= 0.5
         elif candidate not in self.topology.reachable_cells:
             reward -= 5.0
-            info["invalid_move"] = True
+            extra_info["invalid_move"] = True
         else:
             self.current_position = candidate
-            info["invalid_move"] = False
+            extra_info["invalid_move"] = False
 
         if self._is_in_current_target_zone():
             reward += 10.0
             self.current_target_index += 1
-            info["zone_reached"] = True
+            extra_info["zone_reached"] = True
         else:
-            info["zone_reached"] = False
+            extra_info["zone_reached"] = False
 
         if self.current_target_index >= len(self.task.target_zones):
             reward += 50.0
@@ -107,7 +107,7 @@ class WarehouseNavigationEnv(gym.Env if gym is not None else object):
         if self.steps_taken >= self.max_steps:
             truncated = True
 
-        return self._observation(), reward, terminated, truncated, self._info() | info
+        return self._observation(), reward, terminated, truncated, self._info() | extra_info
 
     def render(self):
         rows: list[str] = []
