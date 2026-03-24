@@ -15,7 +15,7 @@ The goal is to make generated code easy to understand and maintain later.
 
 ## Sync Target
 
-- Google Doc: _TBD_
+- Google Doc: https://docs.google.com/document/d/1fTt_3JAG4_u5jb5yyL3o2rqV4ggKh2Bv497zYz1Qw5A/edit?tab=t.0
 - Sync mode: workspace-first, then polished Google Docs updates
 
 ## Documentation Rules

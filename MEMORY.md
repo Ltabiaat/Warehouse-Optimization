@@ -10,6 +10,7 @@
 - Preference: for actual product builds, document the process as work progresses so future iterations are easier to understand and improve
 - Preference: maintain engineering documentation in workspace files first, then sync polished updates into Google Docs as work progresses
 - Preference: Google Docs progress documentation should track implementation progress and function/component operations so generated code is easy to understand later
+- Default process documentation sync target: https://docs.google.com/document/d/1fTt_3JAG4_u5jb5yyL3o2rqV4ggKh2Bv497zYz1Qw5A/edit?tab=t.0
 - Preference: focus on test-driven development when building products
 - Name: Lancelot
 - Preferred form of address: Lancelot
