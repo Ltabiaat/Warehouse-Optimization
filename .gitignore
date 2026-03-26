@@ -31,3 +31,6 @@ venv/
 # Generated outputs
 warehouse_mvp/output/*.generated.json
 warehouse_mvp/output/*.demo.json
+
+# Archived non-project directories
+_archived/
