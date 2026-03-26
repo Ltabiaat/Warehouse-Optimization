@@ -1,0 +1,2 @@
+device_id,asset_type,description,notes
+gr-fl-v3-0033,forklift,Sample forklift tracker used for development fixture,Referenced by trajectory and state CSV fixtures
