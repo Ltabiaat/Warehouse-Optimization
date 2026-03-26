@@ -1,0 +1,33 @@
+# OpenClaw/local workspace metadata
+.openclaw/
+AGENTS.md
+BOOTSTRAP.md
+HEARTBEAT.md
+SOUL.md
+TOOLS.md
+USER.md
+MEMORY.md
+IDENTITY.md
+LEGACY_OPENCLAW_IMPORT.md
+memory/
+
+# Python caches / virtualenvs
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+*/.venv/
+
+# OS/editor noise
+.DS_Store
+.vscode/
+
+# Generated outputs
+warehouse_mvp/output/*.generated.json
+warehouse_mvp/output/*.demo.json
