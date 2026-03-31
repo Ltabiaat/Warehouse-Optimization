@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 
@@ -50,14 +51,64 @@ def ensure_demo_layout() -> None:
     LAYOUT_PATH.write_text(json.dumps(payload, indent=2), encoding="utf-8")
 
 
+class _RenderCallback:
+    """SB3 BaseCallback that renders the env each step."""
+
+    def __init__(self, env, every_n_steps: int = 1) -> None:
+        self._env = env
+        self._every = every_n_steps
+
+    def _build(self) -> None:
+        from stable_baselines3.common.callbacks import BaseCallback
+
+        every = self._every
+        render_env = self._env
+
+        class _Inner(BaseCallback):
+            def _on_step(self) -> bool:
+                if self.n_calls % every == 0:
+                    render_env.render()
+                return True
+
+        self._inner = _Inner()
+
+    def get(self):
+        self._build()
+        return self._inner
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Train PPO route agent")
+    parser.add_argument(
+        "--render",
+        action="store_true",
+        help="Open a pygame window and watch the agent train live",
+    )
+    parser.add_argument(
+        "--render-every",
+        type=int,
+        default=1,
+        metavar="N",
+        help="Render every N steps during training (default: 1)",
+    )
+    parser.add_argument(
+        "--timesteps",
+        type=int,
+        default=3000,
+        help="Total training timesteps (default: 3000)",
+    )
+    args = parser.parse_args()
+
     ensure_demo_layout()
+
     try:
         from stable_baselines3 import PPO
     except ImportError as exc:
         raise SystemExit(
             "stable-baselines3 is not installed. Install requirements-rl.txt first."
         ) from exc
+
+    render_mode = "human" if args.render else None
 
     env = build_route_env(
         layout_path=str(LAYOUT_PATH),
@@ -67,15 +118,23 @@ def main() -> None:
         default_dropoff_zone="OUT",
         task_index=0,
         max_steps=100,
+        render_mode=render_mode,
     )
 
     model = PPO("MultiInputPolicy", env, verbose=1, n_steps=64, batch_size=32)
-    model.learn(total_timesteps=3000)
+
+    callback = None
+    if args.render:
+        # SB3 wraps env in DummyVecEnv — render directly on our env instance
+        callback = _RenderCallback(env, every_n_steps=args.render_every).get()
+
+    model.learn(total_timesteps=args.timesteps, callback=callback)
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     model_path = OUT_DIR / "ppo_route_agent"
     model.save(str(model_path))
 
+    # --- Evaluation rollout ---
     obs, info = env.reset()
     total_reward = 0.0
     terminated = False
@@ -84,6 +143,8 @@ def main() -> None:
     while not (terminated or truncated):
         action, _states = model.predict(obs, deterministic=True)
         obs, reward, terminated, truncated, info = env.step(int(action))
+        if args.render:
+            env.render()
         total_reward += float(reward)
         history.append(
             {
@@ -92,9 +153,11 @@ def main() -> None:
                 "terminated": terminated,
                 "truncated": truncated,
                 "info": info,
-                "render": env.render(),
+                "render": env._render_ansi(),
             }
         )
+
+    env.close()
 
     summary = {
         "total_reward": total_reward,

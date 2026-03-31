@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Warehouse Layout Editor</title>
+<style>
+  :root {
+    --bg: #1a1a2e; --panel: #16213e; --accent: #0f3460;
+    --text: #e0e0e0; --text-dim: #8899aa; --border: #2a3a5a;
+    --btn: #0f3460; --btn-hover: #1a4a7a; --btn-active: #e94560;
+    --success: #4ade80; --warn: #fbbf24; --danger: #ef4444;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── Toolbar (top) ── */
+  #toolbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 48px; z-index: 100;
+    background: var(--panel); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 12px; gap: 6px;
+  }
+  #toolbar .sep { width: 1px; height: 28px; background: var(--border); margin: 0 4px; }
+  .tb-btn {
+    padding: 5px 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--btn); color: var(--text); cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; gap: 4px; white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .tb-btn:hover { background: var(--btn-hover); }
+  .tb-btn.active { background: var(--btn-active); border-color: var(--btn-active); color: #fff; }
+  .tb-btn .swatch { width: 12px; height: 12px; border-radius: 3px; border: 1px solid #fff3; }
+  .tb-btn kbd { font-size: 10px; opacity: 0.5; margin-left: 2px; }
+  #toolbar label { font-size: 12px; color: var(--text-dim); }
+  #toolbar input[type="range"] { width: 60px; }
+  #toolbar input[type="text"] { width: 80px; padding: 3px 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 12px; }
+  #toolbar select { padding: 3px 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 12px; }
+
+  /* ── Sidebar (right) ── */
+  #sidebar {
+    position: fixed; top: 48px; right: 0; bottom: 0; width: 260px; z-index: 90;
+    background: var(--panel); border-left: 1px solid var(--border);
+    overflow-y: auto; padding: 12px; font-size: 12px;
+  }
+  #sidebar h3 { font-size: 13px; color: var(--warn); margin: 10px 0 6px; }
+  #sidebar h3:first-child { margin-top: 0; }
+  .stat-row { display: flex; justify-content: space-between; padding: 2px 0; }
+  .stat-label { color: var(--text-dim); }
+  .stat-val { font-weight: 600; }
+  .zone-row { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+  .zone-swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid #fff3; flex-shrink: 0; }
+  .legend-item { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+  #sidebar button {
+    width: 100%; padding: 6px; margin: 4px 0; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--btn); color: var(--text);
+    cursor: pointer; font-size: 12px; transition: background 0.15s;
+  }
+  #sidebar button:hover { background: var(--btn-hover); }
+  #sidebar button.primary { background: var(--btn-active); border-color: var(--btn-active); }
+  #sidebar input, #sidebar select {
+    width: 100%; padding: 4px 6px; border-radius: 4px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    font-size: 12px; margin: 2px 0;
+  }
+  .row2 { display: flex; gap: 6px; }
+  .row2 > * { flex: 1; }
+
+  /* ── Canvas area ── */
+  #canvas-wrap {
+    position: fixed; top: 48px; left: 0; right: 260px; bottom: 0;
+    overflow: hidden; cursor: crosshair;
+  }
+  #main-canvas { display: block; }
+
+  /* ── Status bar ── */
+  #statusbar {
+    position: fixed; bottom: 0; left: 0; right: 260px; height: 24px;
+    background: var(--panel); border-top: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 12px; gap: 16px;
+    font-size: 11px; color: var(--text-dim); z-index: 90;
+  }
+
+  /* ── Modal ── */
+  .modal-bg {
+    position: fixed; inset: 0; background: #000a; z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-bg.hidden { display: none; }
+  .modal {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; min-width: 320px; max-width: 400px;
+  }
+  .modal h2 { font-size: 16px; margin-bottom: 12px; }
+  .modal label { display: block; font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+  .modal input { width: 100%; padding: 6px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 13px; margin-top: 2px; }
+  .modal .btns { display: flex; gap: 8px; margin-top: 14px; }
+  .modal .btns button { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; font-size: 13px; }
+  .modal .btn-cancel { background: var(--btn); color: var(--text); }
+  .modal .btn-ok { background: var(--btn-active); color: #fff; border-color: var(--btn-active); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════ TOOLBAR ══════════════════════ -->
+<div id="toolbar">
+  <div class="tb-btn" onclick="setTool('X')" id="tb-X"><span class="swatch" style="background:#373737"></span>Wall<kbd>W</kbd></div>
+  <div class="tb-btn" onclick="setTool('')" id="tb-"><span class="swatch" style="background:#f5f5f5"></span>Floor<kbd>E</kbd></div>
+  <div class="tb-btn" onclick="setTool('S')" id="tb-S"><span class="swatch" style="background:#32c832"></span>Start<kbd>S</kbd></div>
+  <div class="tb-btn" onclick="setTool('I')" id="tb-I"><span class="swatch" style="background:#64b4ff"></span>Inbound<kbd>I</kbd></div>
+  <div class="tb-btn" onclick="setTool('O')" id="tb-O"><span class="swatch" style="background:#ff6464"></span>Outbound<kbd>O</kbd></div>
+  <div class="tb-btn" onclick="setTool('D')" id="tb-D"><span class="swatch" style="background:#ffd700"></span>Door<kbd>D</kbd></div>
+  <div class="sep"></div>
+  <label>Zone:</label>
+  <select id="zone-select" style="width:100px" onchange="onZoneSelect(this.value)">
+    <option value="A">A</option>
+    <option value="__NEW__">+ New zone…</option>
+  </select>
+  <div class="tb-btn" onclick="setTool('ZONE')" id="tb-ZONE"><span class="swatch" id="zone-swatch-tb" style="background:#add8e6"></span>Zone<kbd>Z</kbd></div>
+  <div class="sep"></div>
+  <label>Mode:</label>
+  <select id="brush-mode" onchange="setBrushMode(this.value)">
+    <option value="paint">Paint</option>
+    <option value="fill">Flood Fill (F)</option>
+    <option value="line">Line (L)</option>
+    <option value="rect">Rectangle (R)</option>
+  </select>
+  <div class="sep"></div>
+  <label>Radius:</label>
+  <input type="range" id="brush-radius" min="0" max="15" value="0" oninput="brushRadius=+this.value; document.getElementById('radius-val').textContent=this.value">
+  <span id="radius-val" style="font-size:12px;min-width:16px">0</span>
+  <div class="sep"></div>
+  <div class="tb-btn" onclick="undo()" title="Ctrl+Z">Undo</div>
+  <div class="tb-btn" onclick="redo()" title="Ctrl+Shift+Z">Redo</div>
+</div>
+
+<!-- ══════════════════════ CANVAS ══════════════════════ -->
+<div id="canvas-wrap">
+  <canvas id="main-canvas"></canvas>
+</div>
+
+<!-- ══════════════════════ STATUS BAR ══════════════════════ -->
+<div id="statusbar">
+  <span id="st-pos">-</span>
+  <span id="st-cell">-</span>
+  <span id="st-tool">Tool: Wall</span>
+  <span id="st-mode">Mode: Paint</span>
+  <span id="st-zoom">Zoom: 100%</span>
+</div>
+
+<!-- ══════════════════════ SIDEBAR ══════════════════════ -->
+<div id="sidebar">
+  <h3>Warehouse</h3>
+  <input type="text" id="wh-name" value="Case Study D" placeholder="Warehouse name">
+  <div class="row2" style="margin-top:4px">
+    <div><label style="font-size:11px">Forklifts</label><input type="number" id="wh-forklifts" value="4" min="1"></div>
+  </div>
+
+  <h3>Grid Size</h3>
+  <div class="row2">
+    <div><label style="font-size:11px">Width</label><input type="number" id="grid-w" min="10" max="500"></div>
+    <div><label style="font-size:11px">Height</label><input type="number" id="grid-h" min="10" max="500"></div>
+  </div>
+  <div style="font-size:11px;color:var(--text-dim);margin:4px 0" id="area-display">Area: 0 m²</div>
+  <button onclick="resizeGrid()">Resize Grid</button>
+  <button onclick="addBorderWalls()">Add Border Walls</button>
+
+  <h3>Statistics</h3>
+  <div id="stats-panel"></div>
+
+  <h3>Zones</h3>
+  <div id="zones-panel"></div>
+
+  <h3>Legend</h3>
+  <div id="legend-panel"></div>
+
+  <h3>File</h3>
+  <select id="file-list"><option value="">— Load layout —</option></select>
+  <button onclick="loadSelected()">Load Selected</button>
+  <button onclick="importJSON()">Import JSON…</button>
+  <div style="margin-top:6px">
+    <label style="font-size:11px">Save as:</label>
+    <input type="text" id="save-filename" value="warehouse_layout_config.json">
+  </div>
+  <button class="primary" onclick="saveLayout()">💾 Save Layout</button>
+  <button onclick="exportJSON()">⬇ Download JSON</button>
+  <div id="save-status" style="font-size:11px;margin-top:4px"></div>
+</div>
+
+<!-- ══════════════════════ RESIZE MODAL ══════════════════════ -->
+<div class="modal-bg hidden" id="resize-modal">
+  <div class="modal">
+    <h2>Resize Grid</h2>
+    <label>New Width (m)</label><input type="number" id="new-w" min="10" max="500">
+    <label>New Height (m)</label><input type="number" id="new-h" min="10" max="500">
+    <p style="font-size:12px;color:var(--text-dim);margin-top:8px">Content will be preserved where dimensions overlap.</p>
+    <div class="btns">
+      <button class="btn-cancel" onclick="closeModal('resize-modal')">Cancel</button>
+      <button class="btn-ok" onclick="confirmResize()">Resize</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ STARTUP MODAL ══════════════════════ -->
+<div class="modal-bg" id="startup-modal">
+  <div class="modal" style="min-width:380px">
+    <h2>📦 Warehouse Layout Editor</h2>
+    <p style="font-size:13px;color:var(--text-dim);margin-bottom:12px">Choose a layout to open or start fresh.</p>
+    <div id="startup-list" style="max-height:260px;overflow-y:auto;margin-bottom:12px"></div>
+    <div class="btns">
+      <button class="btn-cancel" onclick="startupNewBlank()">+ New Blank Layout</button>
+      <button class="btn-cancel" onclick="startupImportFile()">Import JSON…</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileImport(event)">
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+let gridW = 140, gridH = 140;
+let grid = []; // flat array of strings, row-major: grid[y * gridW + x]
+
+let currentTool = 'X';       // cell value to paint
+let brushMode = 'paint';     // paint | fill | line | rect
+let brushRadius = 0;
+
+let viewX = 0, viewY = 0;    // pan offset in pixels
+let cellSize = 6;             // pixels per cell
+
+let undoStack = [];
+let redoStack = [];
+const MAX_UNDO = 50;
+
+let isPanning = false;
+let isPainting = false;
+let panStartX, panStartY, panStartVX, panStartVY;
+
+// Line/rect mode
+let lineStart = null;   // {gx, gy}
+let rectStart = null;
+
+// Mouse grid position
+let mouseGX = -1, mouseGY = -1;
+
+// Canvas
+const canvas = document.getElementById('main-canvas');
+const ctx = canvas.getContext('2d');
+
+// Offscreen buffer
+let offCanvas, offCtx;
+
+// ═══════════════════════════════════════════════════════════════
+//  COLORS — reserved codes can NEVER collide with zone colors
+// ═══════════════════════════════════════════════════════════════
+const SPECIAL_COLORS = {
+  '':  [245, 245, 245],
+  'X': [55,  55,  55],
+  'S': [50,  200, 50],
+  'I': [100, 180, 255],
+  'O': [255, 100, 100],
+  'D': [255, 215, 0],
+};
+const RESERVED_CODES = new Set(Object.keys(SPECIAL_COLORS));
+
+// Zone palette — carefully chosen to avoid resemblance to any reserved color.
+// Each entry is far from: grey(X), white(floor), green(S), blue(I), red(O), gold(D).
+const ZONE_PALETTE = [
+  [0,  188,212],   // cyan
+  [156, 39,176],   // purple
+  [255,112,67],    // deep orange
+  [38, 166,154],   // teal
+  [233, 30, 99],   // pink
+  [121,134,203],   // indigo-light
+  [255,167,38],    // orange
+  [77, 182,172],   // teal-light
+  [186, 85,211],   // medium orchid
+  [0,  150,136],   // dark teal
+  [244,143,177],   // pink-light
+  [129,199,132],   // green-light (distinct from S-green)
+  [255,138,101],   // salmon
+  [100,181,246],   // blue-light (distinct from I-blue)
+  [174,213,129],   // lime
+  [149,117,205],   // deep purple-light
+  [77, 208,225],   // cyan-light
+  [255,183,77],    // amber (distinct from D-gold)
+  [240,98, 146],   // rose
+  [128,222,234],   // light cyan
+];
+
+// Deterministic zone color: hash the zone name to a palette index.
+// Same name ALWAYS gets the same color, regardless of load order.
+function zoneColor(zone) {
+  // djb2 hash — deterministic, fast, good distribution
+  let h = 5381;
+  for (let i = 0; i < zone.length; i++) {
+    h = ((h << 5) + h + zone.charCodeAt(i)) >>> 0;
+  }
+  return ZONE_PALETTE[h % ZONE_PALETTE.length];
+}
+
+function resetZoneColors() {
+  // No-op — colors are purely hash-based, always stable
+}
+
+function cellColor(val) {
+  if (val in SPECIAL_COLORS) return SPECIAL_COLORS[val];
+  return zoneColor(val);
+}
+
+function rgb(c) { return `rgb(${c[0]},${c[1]},${c[2]})`; }
+
+// ═══════════════════════════════════════════════════════════════
+//  GRID INIT
+// ═══════════════════════════════════════════════════════════════
+function initGrid(w, h) {
+  gridW = w; gridH = h;
+  grid = new Array(w * h).fill('');
+  document.getElementById('grid-w').value = w;
+  document.getElementById('grid-h').value = h;
+  updateAreaDisplay();
+  initOffscreen();
+}
+
+function getCell(x, y) { return grid[y * gridW + x]; }
+function setCell(x, y, val) {
+  if (x >= 0 && x < gridW && y >= 0 && y < gridH) {
+    grid[y * gridW + x] = val;
+  }
+}
+
+function initOffscreen() {
+  offCanvas = document.createElement('canvas');
+  offCanvas.width = gridW;
+  offCanvas.height = gridH;
+  offCtx = offCanvas.getContext('2d');
+  renderFullOffscreen();
+}
+
+function renderFullOffscreen() {
+  const imgData = offCtx.createImageData(gridW, gridH);
+  const d = imgData.data;
+  for (let i = 0; i < grid.length; i++) {
+    const c = cellColor(grid[i]);
+    const j = i * 4;
+    d[j] = c[0]; d[j+1] = c[1]; d[j+2] = c[2]; d[j+3] = 255;
+  }
+  offCtx.putImageData(imgData, 0, 0);
+}
+
+function updateOffscreenCell(x, y) {
+  const c = cellColor(getCell(x, y));
+  const imgData = offCtx.createImageData(1, 1);
+  imgData.data[0] = c[0]; imgData.data[1] = c[1]; imgData.data[2] = c[2]; imgData.data[3] = 255;
+  offCtx.putImageData(imgData, x, y);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MAIN RENDER
+// ═══════════════════════════════════════════════════════════════
+let dirty = true;
+
+function render() {
+  if (!dirty) { requestAnimationFrame(render); return; }
+  dirty = false;
+
+  const cw = canvas.width, ch = canvas.height;
+  ctx.fillStyle = '#111';
+  ctx.fillRect(0, 0, cw, ch);
+
+  // Draw grid from offscreen
+  ctx.imageSmoothingEnabled = false;
+  ctx.save();
+  ctx.translate(viewX, viewY);
+  ctx.scale(cellSize, cellSize);
+  ctx.drawImage(offCanvas, 0, 0);
+  ctx.restore();
+
+  // Grid lines when zoomed in
+  if (cellSize >= 8) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 0.5;
+    const x0 = Math.max(0, Math.floor(-viewX / cellSize));
+    const y0 = Math.max(0, Math.floor(-viewY / cellSize));
+    const x1 = Math.min(gridW, Math.ceil((cw - viewX) / cellSize));
+    const y1 = Math.min(gridH, Math.ceil((ch - viewY) / cellSize));
+    ctx.beginPath();
+    for (let x = x0; x <= x1; x++) {
+      const px = viewX + x * cellSize;
+      ctx.moveTo(px, Math.max(0, viewY)); ctx.lineTo(px, Math.min(ch, viewY + gridH * cellSize));
+    }
+    for (let y = y0; y <= y1; y++) {
+      const py = viewY + y * cellSize;
+      ctx.moveTo(Math.max(0, viewX), py); ctx.lineTo(Math.min(cw, viewX + gridW * cellSize), py);
+    }
+    ctx.stroke();
+  }
+
+  // Cell labels when very zoomed
+  if (cellSize >= 18) {
+    ctx.font = `${Math.min(11, cellSize * 0.4)}px monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const x0 = Math.max(0, Math.floor(-viewX / cellSize));
+    const y0 = Math.max(0, Math.floor(-viewY / cellSize));
+    const x1 = Math.min(gridW, Math.ceil((cw - viewX) / cellSize));
+    const y1 = Math.min(gridH, Math.ceil((ch - viewY) / cellSize));
+    for (let gy = y0; gy < y1; gy++) {
+      for (let gx = x0; gx < x1; gx++) {
+        const val = getCell(gx, gy);
+        if (val) {
+          ctx.fillStyle = (val === 'X') ? '#aaa' : '#333';
+          ctx.fillText(val.substring(0, 3), viewX + gx * cellSize + cellSize/2, viewY + gy * cellSize + cellSize/2);
+        }
+      }
+    }
+  }
+
+  // Coordinate rulers when zoomed
+  if (cellSize >= 10) {
+    ctx.font = '9px monospace';
+    ctx.fillStyle = '#667';
+    const step = cellSize >= 20 ? 5 : 10;
+    for (let x = 0; x < gridW; x += step) {
+      ctx.textAlign = 'center';
+      ctx.fillText(x, viewX + x * cellSize + cellSize/2, 12);
+    }
+    for (let y = 0; y < gridH; y += step) {
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText(y, viewX - 4, viewY + y * cellSize + cellSize/2);
+    }
+  }
+
+  // Brush preview
+  if (mouseGX >= 0 && mouseGX < gridW && mouseGY >= 0 && mouseGY < gridH) {
+    ctx.strokeStyle = 'rgba(233,69,96,0.7)';
+    ctx.lineWidth = 2;
+    if (brushMode === 'paint') {
+      const r = brushRadius;
+      const px = viewX + (mouseGX - r) * cellSize;
+      const py = viewY + (mouseGY - r) * cellSize;
+      const sz = (2 * r + 1) * cellSize;
+      ctx.strokeRect(px, py, sz, sz);
+    } else if (brushMode === 'line' && lineStart) {
+      ctx.beginPath();
+      ctx.moveTo(viewX + lineStart.gx * cellSize + cellSize/2, viewY + lineStart.gy * cellSize + cellSize/2);
+      ctx.lineTo(viewX + mouseGX * cellSize + cellSize/2, viewY + mouseGY * cellSize + cellSize/2);
+      ctx.stroke();
+    } else if (brushMode === 'rect' && rectStart) {
+      const x1 = Math.min(rectStart.gx, mouseGX), x2 = Math.max(rectStart.gx, mouseGX);
+      const y1 = Math.min(rectStart.gy, mouseGY), y2 = Math.max(rectStart.gy, mouseGY);
+      ctx.strokeRect(viewX + x1 * cellSize, viewY + y1 * cellSize, (x2-x1+1)*cellSize, (y2-y1+1)*cellSize);
+    } else {
+      // Single cell highlight
+      ctx.strokeRect(viewX + mouseGX * cellSize, viewY + mouseGY * cellSize, cellSize, cellSize);
+    }
+  }
+
+  requestAnimationFrame(render);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UNDO / REDO
+// ═══════════════════════════════════════════════════════════════
+function pushUndo() {
+  undoStack.push(grid.slice());
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  redoStack.length = 0;
+}
+function undo() {
+  if (!undoStack.length) return;
+  redoStack.push(grid.slice());
+  grid = undoStack.pop();
+  renderFullOffscreen(); updateStats(); dirty = true;
+}
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(grid.slice());
+  grid = redoStack.pop();
+  renderFullOffscreen(); updateStats(); dirty = true;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PAINT OPERATIONS
+// ═══════════════════════════════════════════════════════════════
+function getToolValue() {
+  if (currentTool === 'ZONE') {
+    const sel = document.getElementById('zone-select');
+    const val = sel.value;
+    if (!val || val === '__NEW__') return 'A';
+    return val.trim().toUpperCase();
+  }
+  return currentTool;
+}
+
+function paintAt(gx, gy) {
+  const val = getToolValue();
+  const r = brushRadius;
+  for (let dy = -r; dy <= r; dy++) {
+    for (let dx = -r; dx <= r; dx++) {
+      const nx = gx + dx, ny = gy + dy;
+      if (nx >= 0 && nx < gridW && ny >= 0 && ny < gridH) {
+        setCell(nx, ny, val);
+        updateOffscreenCell(nx, ny);
+      }
+    }
+  }
+  dirty = true;
+}
+
+function floodFill(gx, gy) {
+  const target = getCell(gx, gy);
+  const fill = getToolValue();
+  if (target === fill) return;
+  pushUndo();
+  const queue = [[gx, gy]];
+  const visited = new Set();
+  visited.add(gy * gridW + gx);
+  let count = 0;
+  while (queue.length && count < 10000) {
+    const [cx, cy] = queue.shift();
+    setCell(cx, cy, fill);
+    updateOffscreenCell(cx, cy);
+    count++;
+    for (const [dx, dy] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+      const nx = cx+dx, ny = cy+dy;
+      const key = ny * gridW + nx;
+      if (nx >= 0 && nx < gridW && ny >= 0 && ny < gridH && !visited.has(key) && getCell(nx, ny) === target) {
+        visited.add(key);
+        queue.push([nx, ny]);
+      }
+    }
+  }
+  dirty = true;
+  updateStats();
+}
+
+function bresenham(x0, y0, x1, y1) {
+  const pts = [];
+  let dx = Math.abs(x1-x0), dy = Math.abs(y1-y0);
+  let sx = x0 < x1 ? 1 : -1, sy = y0 < y1 ? 1 : -1;
+  let err = dx - dy;
+  while (true) {
+    pts.push([x0, y0]);
+    if (x0 === x1 && y0 === y1) break;
+    const e2 = 2 * err;
+    if (e2 > -dy) { err -= dy; x0 += sx; }
+    if (e2 < dx) { err += dx; y0 += sy; }
+  }
+  return pts;
+}
+
+function drawLine(x0, y0, x1, y1) {
+  pushUndo();
+  const val = getToolValue();
+  const r = brushRadius;
+  for (const [px, py] of bresenham(x0, y0, x1, y1)) {
+    for (let dy = -r; dy <= r; dy++) {
+      for (let dx = -r; dx <= r; dx++) {
+        const nx = px+dx, ny = py+dy;
+        if (nx >= 0 && nx < gridW && ny >= 0 && ny < gridH) {
+          setCell(nx, ny, val);
+          updateOffscreenCell(nx, ny);
+        }
+      }
+    }
+  }
+  dirty = true;
+  updateStats();
+}
+
+function fillRect(x0, y0, x1, y1) {
+  pushUndo();
+  const val = getToolValue();
+  const ax = Math.min(x0, x1), bx = Math.max(x0, x1);
+  const ay = Math.min(y0, y1), by = Math.max(y0, y1);
+  for (let y = ay; y <= by; y++) {
+    for (let x = ax; x <= bx; x++) {
+      setCell(x, y, val);
+      updateOffscreenCell(x, y);
+    }
+  }
+  dirty = true;
+  updateStats();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TOOL SELECTION
+// ═══════════════════════════════════════════════════════════════
+function setTool(t) {
+  currentTool = t;
+  document.querySelectorAll('#toolbar .tb-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('tb-' + t);
+  if (btn) btn.classList.add('active');
+  if (t === 'ZONE') {
+    const zn = document.getElementById('zone-select').value || 'A';
+    document.getElementById('st-tool').textContent = `Tool: Zone (${zn})`;
+  } else {
+    const names = {'X':'Wall','':'Floor','S':'Start','I':'Inbound','O':'Outbound','D':'Door'};
+    document.getElementById('st-tool').textContent = `Tool: ${names[t] || t}`;
+  }
+}
+
+function setBrushMode(m) {
+  brushMode = m;
+  lineStart = null; rectStart = null;
+  document.getElementById('st-mode').textContent = `Mode: ${m.charAt(0).toUpperCase() + m.slice(1)}`;
+  dirty = true;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  MOUSE EVENTS
+// ═══════════════════════════════════════════════════════════════
+function screenToGrid(sx, sy) {
+  return [Math.floor((sx - viewX) / cellSize), Math.floor((sy - viewY) / cellSize)];
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  // Middle click or space+click = pan
+  if (e.button === 1 || (e.button === 0 && e.altKey)) {
+    isPanning = true;
+    panStartX = e.clientX; panStartY = e.clientY;
+    panStartVX = viewX; panStartVY = viewY;
+    canvas.style.cursor = 'grabbing';
+    e.preventDefault();
+    return;
+  }
+
+  if (e.button !== 0) return;
+  const [gx, gy] = screenToGrid(e.clientX, e.clientY - 48);
+
+  if (gx < 0 || gx >= gridW || gy < 0 || gy >= gridH) return;
+
+  if (brushMode === 'fill') {
+    floodFill(gx, gy);
+    return;
+  }
+  if (brushMode === 'line') {
+    if (!lineStart) {
+      lineStart = {gx, gy};
+    } else {
+      drawLine(lineStart.gx, lineStart.gy, gx, gy);
+      lineStart = null;
+    }
+    return;
+  }
+  if (brushMode === 'rect') {
+    if (!rectStart) {
+      rectStart = {gx, gy};
+    } else {
+      fillRect(rectStart.gx, rectStart.gy, gx, gy);
+      rectStart = null;
+    }
+    return;
+  }
+
+  // Paint mode
+  isPainting = true;
+  pushUndo();
+  paintAt(gx, gy);
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  const [gx, gy] = screenToGrid(e.clientX, e.clientY - 48);
+  mouseGX = gx; mouseGY = gy;
+  dirty = true;
+
+  // Status bar
+  if (gx >= 0 && gx < gridW && gy >= 0 && gy < gridH) {
+    document.getElementById('st-pos').textContent = `Pos: (${gx}, ${gy})`;
+    const val = getCell(gx, gy);
+    const names = {'X':'Wall','':'Floor','S':'Start','I':'Inbound','O':'Outbound','D':'Door'};
+    document.getElementById('st-cell').textContent = `Cell: ${names[val] !== undefined ? names[val] : `Zone ${val}`}`;
+  }
+
+  if (isPanning) {
+    viewX = panStartVX + (e.clientX - panStartX);
+    viewY = panStartVY + (e.clientY - panStartY);
+    dirty = true;
+    return;
+  }
+  if (isPainting) {
+    if (gx >= 0 && gx < gridW && gy >= 0 && gy < gridH) {
+      paintAt(gx, gy);
+    }
+  }
+});
+
+canvas.addEventListener('mouseup', (e) => {
+  if (isPanning) { isPanning = false; canvas.style.cursor = 'crosshair'; return; }
+  if (isPainting) { isPainting = false; updateStats(); }
+});
+
+canvas.addEventListener('mouseleave', () => {
+  mouseGX = -1; mouseGY = -1;
+  isPainting = false; isPanning = false;
+  canvas.style.cursor = 'crosshair';
+  dirty = true;
+});
+
+// Zoom with scroll
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  const [mx, my] = [e.clientX, e.clientY - 48];
+  const oldSize = cellSize;
+  const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+  cellSize = Math.max(1, Math.min(60, cellSize * factor));
+
+  // Zoom toward cursor
+  viewX = mx - (mx - viewX) * (cellSize / oldSize);
+  viewY = my - (my - viewY) * (cellSize / oldSize);
+
+  document.getElementById('st-zoom').textContent = `Zoom: ${Math.round(cellSize / 6 * 100)}%`;
+  dirty = true;
+}, { passive: false });
+
+// ═══════════════════════════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ═══════════════════════════════════════════════════════════════
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
+    if (e.key === 'z' && e.shiftKey) { e.preventDefault(); redo(); return; }
+    if (e.key === 'Z') { e.preventDefault(); redo(); return; }
+  }
+  const map = {'w':'X','e':'','s':'S','i':'I','o':'O','d':'D','z':'ZONE'};
+  if (map[e.key]) { setTool(map[e.key]); return; }
+  if (e.key === 'f') { setBrushMode('fill'); document.getElementById('brush-mode').value = 'fill'; return; }
+  if (e.key === 'l') { setBrushMode('line'); document.getElementById('brush-mode').value = 'line'; return; }
+  if (e.key === 'r') { setBrushMode('rect'); document.getElementById('brush-mode').value = 'rect'; return; }
+  if (e.key === 'p') { setBrushMode('paint'); document.getElementById('brush-mode').value = 'paint'; return; }
+  if (e.key === 'Escape') { lineStart = null; rectStart = null; dirty = true; }
+  // Number keys for radius
+  if (e.key >= '0' && e.key <= '9') {
+    brushRadius = parseInt(e.key);
+    document.getElementById('brush-radius').value = brushRadius;
+    document.getElementById('radius-val').textContent = brushRadius;
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  STATS
+// ═══════════════════════════════════════════════════════════════
+function updateStats() {
+  const counts = {};
+  for (let i = 0; i < grid.length; i++) {
+    const v = grid[i];
+    counts[v] = (counts[v] || 0) + 1;
+  }
+  const total = grid.length;
+  const walls = counts['X'] || 0;
+  const floor = counts[''] || 0;
+  const starts = counts['S'] || 0;
+  const inbound = counts['I'] || 0;
+  const outbound = counts['O'] || 0;
+  const doors = counts['D'] || 0;
+
+  const zones = {};
+  for (const [k, v] of Object.entries(counts)) {
+    if (k && !['X','S','I','O','D'].includes(k)) zones[k] = v;
+  }
+  const zoneTotal = Object.values(zones).reduce((a,b) => a+b, 0);
+
+  let html = '';
+  html += `<div class="stat-row"><span class="stat-label">Total</span><span class="stat-val">${total.toLocaleString()} m²</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Walls</span><span class="stat-val">${walls.toLocaleString()} (${(walls/total*100).toFixed(1)}%)</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Open floor</span><span class="stat-val">${floor.toLocaleString()} (${(floor/total*100).toFixed(1)}%)</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Starts</span><span class="stat-val">${starts}</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Inbound docks</span><span class="stat-val">${inbound}</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Outbound docks</span><span class="stat-val">${outbound}</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Doors</span><span class="stat-val">${doors}</span></div>`;
+  html += `<div class="stat-row"><span class="stat-label">Zone cells</span><span class="stat-val">${zoneTotal.toLocaleString()}</span></div>`;
+  document.getElementById('stats-panel').innerHTML = html;
+
+  // Zones panel — clickable rows with edit/delete buttons
+  let zh = '';
+  const sortedZones = Object.entries(zones).sort();
+  for (const [name, cnt] of sortedZones) {
+    const c = zoneColor(name);
+    const pct = (cnt / total * 100).toFixed(1);
+    const esc = name.replace(/'/g, "\\'");
+    zh += `<div class="zone-row" style="padding:3px 4px;border-radius:4px;" onmouseenter="this.style.background='var(--accent)'" onmouseleave="this.style.background='transparent'">`;
+    zh += `<span class="zone-swatch" style="background:${rgb(c)};cursor:pointer" onclick="selectZone('${esc}')" title="Select zone ${name}"></span>`;
+    zh += `<span style="cursor:pointer;flex:1" onclick="selectZone('${esc}')" title="Click to paint with this zone">${name}</span>`;
+    zh += `<span style="font-weight:600;font-size:11px;margin-right:4px">${cnt.toLocaleString()} m²</span>`;
+    zh += `<span style="cursor:pointer;opacity:0.6;font-size:13px;padding:0 3px" onclick="renameZone('${esc}')" title="Rename zone">✏️</span>`;
+    zh += `<span style="cursor:pointer;opacity:0.6;font-size:13px;padding:0 3px" onclick="deleteZone('${esc}')" title="Delete zone (convert to floor)">🗑️</span>`;
+    zh += `</div>`;
+  }
+  document.getElementById('zones-panel').innerHTML = zh || '<span style="color:var(--text-dim)">No zones defined</span>';
+
+  // Update the zone dropdown to include all existing zones
+  updateZoneDropdown(Object.keys(zones).sort());
+
+  // Update legend to include zones
+  renderLegend(Object.keys(zones).sort());
+
+  updateAreaDisplay();
+}
+
+function updateAreaDisplay() {
+  document.getElementById('area-display').textContent = `Area: ${(gridW * gridH).toLocaleString()} m²`;
+}
+
+function selectZone(name) {
+  // Set the zone dropdown to this zone and activate the zone tool
+  const sel = document.getElementById('zone-select');
+  // Ensure this option exists
+  let found = false;
+  for (const opt of sel.options) {
+    if (opt.value === name) { found = true; break; }
+  }
+  if (!found) {
+    const opt = document.createElement('option');
+    opt.value = name; opt.textContent = name;
+    sel.insertBefore(opt, sel.querySelector('option[value="__NEW__"]'));
+  }
+  sel.value = name;
+  // Update swatch color
+  const c = zoneColor(name);
+  document.getElementById('zone-swatch-tb').style.background = rgb(c);
+  setTool('ZONE');
+}
+
+function renameZone(oldName) {
+  const newName = prompt(`Rename zone "${oldName}" to:`, oldName);
+  if (!newName || !newName.trim() || newName.trim().toUpperCase() === oldName) return;
+  const zn = newName.trim().toUpperCase();
+  // Block reserved codes
+  if (RESERVED_CODES.has(zn) || ['X','S','I','O','D'].includes(zn)) {
+    alert(`"${zn}" is a reserved code. Choose a different name.`);
+    return;
+  }
+  pushUndo();
+  // Replace all cells with oldName → newName
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] === oldName) grid[i] = zn;
+  }
+  renderFullOffscreen();
+  updateStats();
+  dirty = true;
+  // Update dropdown
+  const sel = document.getElementById('zone-select');
+  for (const opt of sel.options) {
+    if (opt.value === oldName) { opt.value = zn; opt.textContent = zn; break; }
+  }
+  showStatus(`Renamed zone ${oldName} → ${zn}`, 'success');
+}
+
+function deleteZone(name) {
+  const cnt = grid.filter(v => v === name).length;
+  if (!confirm(`Delete zone "${name}"? This will convert ${cnt.toLocaleString()} cells to open floor.`)) return;
+  pushUndo();
+  for (let i = 0; i < grid.length; i++) {
+    if (grid[i] === name) grid[i] = '';
+  }
+  renderFullOffscreen();
+  updateStats();
+  dirty = true;
+  // Remove from dropdown
+  const sel = document.getElementById('zone-select');
+  for (const opt of sel.options) {
+    if (opt.value === name) { sel.removeChild(opt); break; }
+  }
+  if (sel.value === name || sel.value === '__NEW__') {
+    sel.selectedIndex = 0;
+  }
+  showStatus(`Deleted zone ${name} (${cnt.toLocaleString()} cells → floor)`, 'success');
+}
+
+function onZoneSelect(val) {
+  if (val === '__NEW__') {
+    const name = prompt('Enter new zone name:');
+    if (name && name.trim()) {
+      const zn = name.trim().toUpperCase();
+      // Block reserved codes — these are used for walls, floor, start, docks, doors
+      if (RESERVED_CODES.has(zn) || ['X','S','I','O','D'].includes(zn)) {
+        alert(`"${zn}" is a reserved code (Wall/Start/Inbound/Outbound/Door). Choose a different name.`);
+        const sel = document.getElementById('zone-select');
+        if (sel.options.length > 1) sel.selectedIndex = 0;
+        return;
+      }
+      const sel = document.getElementById('zone-select');
+      // Add if not exists
+      let found = false;
+      for (const opt of sel.options) {
+        if (opt.value === zn) { found = true; break; }
+      }
+      if (!found) {
+        const opt = document.createElement('option');
+        opt.value = zn; opt.textContent = zn;
+        sel.insertBefore(opt, sel.querySelector('option[value="__NEW__"]'));
+      }
+      sel.value = zn;
+      const c = zoneColor(zn);
+      document.getElementById('zone-swatch-tb').style.background = rgb(c);
+      setTool('ZONE');
+    } else {
+      // Cancelled — revert to first zone option
+      const sel = document.getElementById('zone-select');
+      if (sel.options.length > 1) sel.selectedIndex = 0;
+    }
+  } else {
+    const c = zoneColor(val);
+    document.getElementById('zone-swatch-tb').style.background = rgb(c);
+    setTool('ZONE');
+  }
+}
+
+function updateZoneDropdown(zoneNames) {
+  const sel = document.getElementById('zone-select');
+  const current = sel.value;
+  // Preserve existing options, add missing ones
+  const existing = new Set();
+  for (const opt of sel.options) {
+    if (opt.value !== '__NEW__') existing.add(opt.value);
+  }
+  for (const name of zoneNames) {
+    if (!existing.has(name)) {
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = name;
+      sel.insertBefore(opt, sel.querySelector('option[value="__NEW__"]'));
+    }
+  }
+  // Restore selection if it still exists
+  if (current && current !== '__NEW__') {
+    for (const opt of sel.options) {
+      if (opt.value === current) { sel.value = current; break; }
+    }
+  }
+}
+
+function renderLegend(zoneNames) {
+  zoneNames = zoneNames || [];
+  const fixedItems = [
+    ['Floor', [245,245,245]], ['Wall', [55,55,55]], ['Start', [50,200,50]],
+    ['Inbound', [100,180,255]], ['Outbound', [255,100,100]], ['Door', [255,215,0]],
+  ];
+  let html = '';
+  for (const [name, c] of fixedItems) {
+    html += `<div class="legend-item"><span class="zone-swatch" style="background:${rgb(c)}"></span>${name}</div>`;
+  }
+  // Add ALL zones to legend
+  for (const name of zoneNames) {
+    const c = zoneColor(name);
+    html += `<div class="legend-item" style="cursor:pointer" onclick="selectZone('${name.replace(/'/g, "\\'")}')"><span class="zone-swatch" style="background:${rgb(c)}"></span>Zone: ${name}</div>`;
+  }
+  document.getElementById('legend-panel').innerHTML = html;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  JSON SERIALIZATION (matches Python exactly)
+// ═══════════════════════════════════════════════════════════════
+function gridToJson() {
+  const blocked = [], zones = [], starts = [], inbound = [], outbound = [], doors = [];
+  for (let y = 0; y < gridH; y++) {
+    for (let x = 0; x < gridW; x++) {
+      const v = getCell(x, y);
+      if (v === 'X') blocked.push({x, y});
+      else if (v === 'S') starts.push({x, y});
+      else if (v === 'I') inbound.push({x, y});
+      else if (v === 'O') outbound.push({x, y});
+      else if (v === 'D') doors.push({x, y});
+      else if (v) zones.push({x, y, zone: v});
+    }
+  }
+  return {
+    warehouse_name: document.getElementById('wh-name').value || 'Warehouse',
+    width: gridW,
+    height: gridH,
+    forklift_count: parseInt(document.getElementById('wh-forklifts').value) || 4,
+    blocked_cells: blocked,
+    zone_cells: zones,
+    start_cells: starts,
+    inbound_docks: inbound,
+    outbound_docks: outbound,
+    door_cells: doors,
+  };
+}
+
+function gridFromJson(data) {
+  const w = data.width, h = data.height;
+  initGrid(w, h);
+  document.getElementById('wh-name').value = data.warehouse_name || 'Warehouse';
+  document.getElementById('wh-forklifts').value = data.forklift_count || 4;
+
+  // Reset zone color assignments so they're assigned in alphabetical order
+  resetZoneColors();
+
+  // Pre-register zones in alphabetical order for consistent coloring
+  const zoneNames = new Set();
+  for (const c of (data.zone_cells || [])) {
+    const zn = (c.zone || '').trim().toUpperCase();
+    if (zn) zoneNames.add(zn);
+  }
+  for (const name of [...zoneNames].sort()) zoneColor(name);
+
+  for (const c of (data.blocked_cells || [])) setCell(c.x, c.y, 'X');
+  for (const c of (data.zone_cells || [])) setCell(c.x, c.y, (c.zone || '').trim().toUpperCase());
+  for (const c of (data.start_cells || [])) setCell(c.x, c.y, 'S');
+  for (const c of (data.inbound_docks || [])) setCell(c.x, c.y, 'I');
+  for (const c of (data.outbound_docks || [])) setCell(c.x, c.y, 'O');
+  for (const c of (data.door_cells || [])) setCell(c.x, c.y, 'D');
+
+  renderFullOffscreen();
+  updateStats();
+  centerView();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FILE OPS
+// ═══════════════════════════════════════════════════════════════
+async function loadLayoutList() {
+  try {
+    const res = await fetch('/api/layouts');
+    const layouts = await res.json();
+    const sel = document.getElementById('file-list');
+    sel.innerHTML = '<option value="">— Load layout —</option>';
+    for (const l of layouts) {
+      const opt = document.createElement('option');
+      opt.value = l.filename;
+      opt.textContent = `${l.name} (${l.width}×${l.height})`;
+      sel.appendChild(opt);
+    }
+  } catch (e) { console.warn('Could not load layout list', e); }
+}
+
+async function loadSelected() {
+  const filename = document.getElementById('file-list').value;
+  if (!filename) return;
+  try {
+    const res = await fetch(`/api/layouts/${filename}`);
+    const data = await res.json();
+    undoStack.length = 0; redoStack.length = 0;
+    gridFromJson(data);
+    showStatus(`Loaded: ${filename}`, 'success');
+  } catch (e) { showStatus('Load failed: ' + e.message, 'error'); }
+}
+
+async function saveLayout() {
+  const filename = document.getElementById('save-filename').value || 'warehouse_layout_config.json';
+  const data = gridToJson();
+  try {
+    const res = await fetch('/api/layouts', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({filename, data}),
+    });
+    const result = await res.json();
+    if (res.ok) {
+      showStatus(`Saved: ${filename}`, 'success');
+      loadLayoutList();
+    } else {
+      showStatus(`Save failed: ${result.error}`, 'error');
+    }
+  } catch (e) { showStatus('Save failed: ' + e.message, 'error'); }
+}
+
+function exportJSON() {
+  const data = gridToJson();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = document.getElementById('save-filename').value || 'warehouse_layout_config.json';
+  a.click();
+}
+
+function importJSON() {
+  document.getElementById('file-input').click();
+}
+
+function handleFileImport(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      undoStack.length = 0; redoStack.length = 0;
+      gridFromJson(data);
+      showStatus(`Imported: ${file.name}`, 'success');
+    } catch (err) { showStatus('Import failed: ' + err.message, 'error'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function showStatus(msg, type) {
+  const el = document.getElementById('save-status');
+  el.textContent = msg;
+  el.style.color = type === 'success' ? 'var(--success)' : type === 'error' ? 'var(--danger)' : 'var(--text)';
+  setTimeout(() => { el.textContent = ''; }, 4000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  GRID OPERATIONS
+// ═══════════════════════════════════════════════════════════════
+function resizeGrid() {
+  document.getElementById('new-w').value = document.getElementById('grid-w').value;
+  document.getElementById('new-h').value = document.getElementById('grid-h').value;
+  document.getElementById('resize-modal').classList.remove('hidden');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+function confirmResize() {
+  const nw = parseInt(document.getElementById('new-w').value) || gridW;
+  const nh = parseInt(document.getElementById('new-h').value) || gridH;
+  if (nw === gridW && nh === gridH) { closeModal('resize-modal'); return; }
+
+  pushUndo();
+  const oldGrid = grid.slice();
+  const ow = gridW, oh = gridH;
+
+  initGrid(nw, nh);
+
+  // Copy overlap
+  const cw = Math.min(ow, nw), ch = Math.min(oh, nh);
+  for (let y = 0; y < ch; y++) {
+    for (let x = 0; x < cw; x++) {
+      setCell(x, y, oldGrid[y * ow + x]);
+    }
+  }
+
+  renderFullOffscreen();
+  updateStats();
+  centerView();
+  closeModal('resize-modal');
+  dirty = true;
+}
+
+function addBorderWalls() {
+  pushUndo();
+  for (let x = 0; x < gridW; x++) {
+    setCell(x, 0, 'X'); updateOffscreenCell(x, 0);
+    setCell(x, gridH-1, 'X'); updateOffscreenCell(x, gridH-1);
+  }
+  for (let y = 0; y < gridH; y++) {
+    setCell(0, y, 'X'); updateOffscreenCell(0, y);
+    setCell(gridW-1, y, 'X'); updateOffscreenCell(gridW-1, y);
+  }
+  dirty = true;
+  updateStats();
+}
+
+function centerView() {
+  const wrap = document.getElementById('canvas-wrap');
+  const cw = wrap.clientWidth, ch = wrap.clientHeight;
+  // Fit grid in view
+  cellSize = Math.max(1, Math.min(60, Math.min(cw / gridW, ch / gridH) * 0.9));
+  viewX = (cw - gridW * cellSize) / 2;
+  viewY = (ch - gridH * cellSize) / 2;
+  document.getElementById('st-zoom').textContent = `Zoom: ${Math.round(cellSize / 6 * 100)}%`;
+  dirty = true;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+function resizeCanvas() {
+  const wrap = document.getElementById('canvas-wrap');
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  dirty = true;
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+// ═══════════════════════════════════════════════════════════════
+//  STARTUP — ask user which layout to open
+// ═══════════════════════════════════════════════════════════════
+async function populateStartupModal() {
+  const listEl = document.getElementById('startup-list');
+  try {
+    const res = await fetch('/api/layouts');
+    const layouts = await res.json();
+    if (layouts.length === 0) {
+      listEl.innerHTML = '<p style="color:var(--text-dim);font-size:12px;padding:8px">No saved layouts found.</p>';
+      return;
+    }
+    let html = '';
+    for (const l of layouts) {
+      const esc = l.filename.replace(/'/g, "\\'");
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;cursor:pointer;border:1px solid var(--border);margin-bottom:6px;transition:background 0.15s" onmouseenter="this.style.background='var(--accent)'" onmouseleave="this.style.background='transparent'" onclick="startupLoadLayout('${esc}')">`;
+      html += `<span style="font-size:20px">🏭</span>`;
+      html += `<div style="flex:1"><div style="font-weight:600">${l.name}</div><div style="font-size:11px;color:var(--text-dim)">${l.width} × ${l.height} m · ${l.filename}</div></div>`;
+      html += `<span style="font-size:11px;color:var(--text-dim)">${(l.width * l.height).toLocaleString()} m²</span>`;
+      html += `</div>`;
+    }
+    listEl.innerHTML = html;
+  } catch (e) {
+    listEl.innerHTML = '<p style="color:var(--danger);font-size:12px">Could not load layout list.</p>';
+  }
+}
+
+async function startupLoadLayout(filename) {
+  try {
+    const res = await fetch(`/api/layouts/${filename}`);
+    const data = await res.json();
+    undoStack.length = 0; redoStack.length = 0;
+    gridFromJson(data);
+    document.getElementById('save-filename').value = filename;
+    showStatus(`Loaded: ${filename}`, 'success');
+  } catch (e) {
+    showStatus('Load failed: ' + e.message, 'error');
+  }
+  closeModal('startup-modal');
+  loadLayoutList();
+}
+
+function startupNewBlank() {
+  initGrid(100, 100);
+  renderFullOffscreen();
+  updateStats();
+  centerView();
+  closeModal('startup-modal');
+  loadLayoutList();
+}
+
+function startupImportFile() {
+  closeModal('startup-modal');
+  // Small delay so modal closes before file dialog
+  setTimeout(() => document.getElementById('file-input').click(), 100);
+  // If user cancels the file dialog, show a blank grid
+  // (handleFileImport will load the file if chosen)
+  initGrid(100, 100);
+  renderFullOffscreen();
+  updateStats();
+  centerView();
+  loadLayoutList();
+}
+
+async function init() {
+  resizeCanvas();
+  renderLegend();
+  setTool('X');
+
+  // Show blank grid behind modal
+  initGrid(100, 100);
+  renderFullOffscreen();
+  centerView();
+
+  // Show startup modal
+  await populateStartupModal();
+
+  requestAnimationFrame(render);
+}
+
+init();
+</script>
+</body>
+</html>

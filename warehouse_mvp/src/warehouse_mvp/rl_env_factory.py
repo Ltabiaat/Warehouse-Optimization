@@ -17,6 +17,7 @@ def build_route_env(
     default_dropoff_zone: str | None = None,
     task_index: int = 0,
     max_steps: int = 100,
+    render_mode: str | None = None,
 ) -> WarehouseNavigationEnv:
     config = load_layout_config(layout_path)
     raw_rows = read_raw_rows(warehouse_csv_path)
@@ -33,7 +34,7 @@ def build_route_env(
     task = tasks[min(task_index, len(tasks) - 1)]
     sequence = task_to_sequence(task)
     nav_task = sequence_to_navigation_task(config, sequence)
-    return WarehouseNavigationEnv(config, nav_task, max_steps=max_steps)
+    return WarehouseNavigationEnv(config, nav_task, max_steps=max_steps, render_mode=render_mode)
 
 
 def make_env_factory(**kwargs) -> Callable[[], WarehouseNavigationEnv]:
